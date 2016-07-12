@@ -1,0 +1,29 @@
+﻿  MicroFile.cpp
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitconfig.h(376): fatal error C1083: Cannot open include file: 'MicroBitHeapAllocator.h': No such file or directory
+  MicroBitFlash.cpp
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitflash.cpp(1): warning C4627: '#include "MicroBitFlash.h"': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitflash.cpp(1): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitflash.cpp(277): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  MicroBitFileSystem.cpp
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(1): warning C4627: '#include <stddef.h>': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(1): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(2): warning C4627: '#include <string.h>': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(2): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(3): warning C4627: '#include <stdint.h>': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(3): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(4): warning C4627: '#include "MicroBitConfig.h"': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(4): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(5): warning C4627: '#include "MicroBitHeapAllocator.h"': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(5): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(6): warning C4627: '#include "MicroBitFileSystem.h"': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(6): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(7): warning C4627: '#include "MicroBitFlash.h"': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(7): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(8): warning C4627: '#include "MicroBitDevice.h"': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(8): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(9): warning C4627: '#include "MicroBitStorage.h"': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(9): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(10): warning C4627: '#include "MicroBitCompat.h"': skipped when looking for precompiled header use
+  c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(10): note: Add directive to 'stdafx.h' or rebuild precompiled header
+c:\users\andras\documents\visual studio 2015\projects\microfile\microfile\microbitfilesystem.cpp(876): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  Generating Code...
