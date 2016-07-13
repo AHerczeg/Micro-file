@@ -1,16 +1,19 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <algorithm>
 #include "MicroBitConfig.h"         // SERIAL_DEBUG
 #include "MicroBitFileSystem.h"
 #include "MicroBitFlash.h"
-#include "MicroBitStorage.h"
+//#include "MicroBitStorage.h"
 #include "ErrorNo.h"
 
 // Symbols provided by the linker script.
 extern uint32_t __data_end__;
 extern uint32_t __data_start__;
 extern uint32_t __etext;
+
 
 MicroBitFileSystem* MicroBitFileSystem::defaultFileSystem = NULL;
 
@@ -29,6 +32,7 @@ FileTableEntry* MicroBitFileSystem::ft_by_name(char const * filename)
     }
     return NULL;
 }
+
 
 /**
   * @brief Get a pointer to the lowest numbered available FT entry.
@@ -127,8 +131,8 @@ int MicroBitFileSystem::ft_remove(FileTableEntry* m)
     // [ ][ ][1][4][5][6]
     // ----------------------------------------------
 
-    MicroBitStorage mbs;
-
+    //MicroBitStorage mbs;   EXPERIMENTAL CODE
+ 
     // used = no. used blocks in FileTableEntry.
     int used=0;
     for(used=0;used<this->flash_data_pages;used++)
@@ -160,7 +164,9 @@ int MicroBitFileSystem::ft_remove(FileTableEntry* m)
     {
         uint8_t bl = m->blocks[j];
 
-        mbs.flashPageErase((uint32_t*)&this->flash_start[(PAGE_SIZE * bl)]);
+        //mbs.flashPageErase((uint32_t*)&this->flash_start[(PAGE_SIZE * bl)]);
+		flashPageErase((uint32_t*)&this->flash_start[(PAGE_SIZE * bl)]);
+
 
         bl |= FT_FREE_BLOCK_MARKER;
 
@@ -284,7 +290,7 @@ int MicroBitFileSystem::ft_build()
         return 0;
 
     // Populate the free block list.
-    uint8_t bl[this->flash_data_pages];
+    uint8_t* bl = (uint8_t*)malloc(this->flash_data_pages);
     
     for(int i=0; i < (this->flash_data_pages); ++i)
         bl[i] = i | FT_FREE_BLOCK_MARKER;
@@ -313,7 +319,7 @@ uint8_t* MicroBitFileSystem::getRandomScratch()
     if(n == this->flash_data_pages)
         return NULL;
 
-    int scratch_index = microbit_random(this->flash_data_pages - n);
+    int scratch_index = rand() % (this->flash_data_pages - n); // EXPERIMENTAL CODE
 
     int scratch_page = this->ft_free_loc->blocks[n + scratch_index] & ~FT_FREE_BLOCK_MARKER;
 
@@ -368,6 +374,10 @@ int MicroBitFileSystem::fd_valid(int fd)
     return (fd>=0 && fd < MAX_FD && this->fd_table[fd]);
 }
 
+void MicroBitFileSystem::flashPageErase(uint32_t * page_address)
+{
+}
+
 /**
   * Constructor. Creates an instance of a MicroBitFileSystem.
   */
@@ -404,7 +414,7 @@ int MicroBitFileSystem::init(uint32_t flash_start, int flash_pages)
     if(fs_initialised()) 
         return MICROBIT_OK;
 
-    MicroBitStorage kv;
+    //MicroBitStorage kv;  EXPERIMENTAL CODE
 
     if(flash_start == MBFS_USE_DEFAULT)
         // Flash start is on the first page after the programmed ROM contents.
@@ -419,7 +429,7 @@ int MicroBitFileSystem::init(uint32_t flash_start, int flash_pages)
         flash_pages = (MBFS_LAST_PAGE_ADDR - flash_start)/PAGE_SIZE + 1;
 
     // Number of flash pages available for the file system.
-    flash_pages = min(MAX_FILESYSTEM_PAGES, flash_pages);
+    flash_pages = std::min(MAX_FILESYSTEM_PAGES, flash_pages);
 
     // The no. pages reserved for file data is (flash_pages-1)
     this->ft_init((uint8_t*)flash_start, (flash_pages-1));
@@ -565,7 +575,7 @@ int MicroBitFileSystem::close(int fd)
     this->ft_set_filesize(this->fd_table[fd]->ft_entry,
                           this->fd_table[fd]->filesize);
 
-    microbit_free(this->fd_table[fd]);
+    free(this->fd_table[fd]); // EXPERIMENTAL CODE
     this->fd_table[fd] = NULL;
     return MICROBIT_OK;
 }
@@ -706,7 +716,7 @@ int MicroBitFileSystem::read(int fd, uint8_t* buffer, int size)
         int b = ft_get_block(this->fd_table[fd]->ft_entry, bInd);
 
         // s  no. bytes to read from this page.
-        int s = min(PAGE_SIZE-ofs,sz);
+        int s = std::min(PAGE_SIZE-ofs,sz);
 
         //Can't read beyond the end of the file.
         if((this->fd_table[fd]->seek+s) > filesize)
@@ -799,7 +809,7 @@ int MicroBitFileSystem::write(int fd, uint8_t* buffer, int size)
 
         int bInd = this->fd_table[fd]->seek / PAGE_SIZE; // Block index.
         int ofs = this->fd_table[fd]->seek % PAGE_SIZE;  // offset within block.
-        int wr = min(PAGE_SIZE-ofs,sz);  // No. bytes to write.
+        int wr = std::min(PAGE_SIZE-ofs,sz);  // No. bytes to write.
         int b = 0;                       //absolute block number.
 
         if(bInd >= allocated_blocks)
@@ -870,4 +880,8 @@ int MicroBitFileSystem::remove(char const * filename)
         return MICROBIT_INVALID_PARAMETER;
 
     return this->ft_remove(m);
+}
+
+void flashPageErase(uint32_t * page_address)
+{
 }

@@ -394,6 +394,9 @@ class MicroBitFileSystem
       */
     inline int fd_valid(int fd);
 
+	// EXPERIMENTAL CODE
+
+	void flashPageErase(uint32_t * page_address);
 
     public:
 
@@ -567,5 +570,9 @@ class MicroBitFileSystem
       */
     int remove(char const * filename);
 };
+
+
+
+
 
 #endif

@@ -145,6 +145,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ErrorNo.h" />
     <ClInclude Include="MicroBitConfig.h" />
     <ClInclude Include="MicroBitFileSystem.h" />
     <ClInclude Include="MicroBitFlash.h" />

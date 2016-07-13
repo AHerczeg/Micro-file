@@ -373,7 +373,7 @@ DEALINGS IN THE SOFTWARE.
 #define CONFIG_DISABLED(X) (X != 1)
 
 #if CONFIG_ENABLED(MICROBIT_HEAP_ALLOCATOR)
-#include "MicroBitHeapAllocator.h"
+//#include "MicroBitHeapAllocator.h"
 #endif
 
 #if CONFIG_ENABLED(MICROBIT_DBG)

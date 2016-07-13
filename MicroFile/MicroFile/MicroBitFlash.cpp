@@ -42,7 +42,10 @@ int MicroBitFlash::need_erase(uint8_t* source, uint8_t* flash_addr, int len)
 void MicroBitFlash::erase_page(uint32_t* pg_addr) 
 {
 
-    // Turn on flash erase enable and wait until the NVMC is ready:
+	/*
+    EXPERIMENTAL CODE
+	
+	// Turn on flash erase enable and wait until the NVMC is ready:
     NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Een);
     while (NRF_NVMC->READY == NVMC_READY_READY_Busy) { }
 
@@ -53,6 +56,8 @@ void MicroBitFlash::erase_page(uint32_t* pg_addr)
     // Turn off flash erase enable and wait until the NVMC is ready:
     NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Ren << NVMC_CONFIG_WEN_Pos);
     while (NRF_NVMC->READY == NVMC_READY_READY_Busy) { }
+	
+	*/
 }
  
 /**
@@ -66,7 +71,9 @@ void MicroBitFlash::erase_page(uint32_t* pg_addr)
   */
 void MicroBitFlash::flash_burn(uint32_t* addr, uint32_t* buffer, int size) 
 {
- 
+	/*
+	EXPERIMENTAL CODE
+
     // Turn on flash write enable and wait until the NVMC is ready:
     NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Wen << NVMC_CONFIG_WEN_Pos);
     while (NRF_NVMC->READY == NVMC_READY_READY_Busy) {};
@@ -80,6 +87,8 @@ void MicroBitFlash::flash_burn(uint32_t* addr, uint32_t* buffer, int size)
     // Turn off flash write enable and wait until the NVMC is ready:
     NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Ren << NVMC_CONFIG_WEN_Pos);
     while (NRF_NVMC->READY == NVMC_READY_READY_Busy) {};
+
+	*/
 }
  
 /**
