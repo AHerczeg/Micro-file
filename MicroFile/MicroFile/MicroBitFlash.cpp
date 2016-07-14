@@ -1,4 +1,6 @@
+#include "stdafx.h"
 #include "MicroBitFlash.h"
+
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
 
@@ -282,4 +284,3 @@ int MicroBitFlash::flash_erase_mem(uint8_t* address, int length,
                                      WR_MEMSET, scratch_addr);
     }
 }
-

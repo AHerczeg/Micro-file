@@ -3,6 +3,7 @@
 #include "MicroBitConfig.h"
 #include "MicroBitFlash.h"
 #include <stdint.h>
+#include <stdio.h>
 
 /**
   * @file MicroBitFileSystem.h
@@ -181,6 +182,38 @@ typedef struct mb_fd_t
     FileTableEntry* ft_entry;
 
 } mb_fd;
+
+
+/* EXPERIMENTAL CODE
+
+#define MICROBIT_STORAGE_STORE_PAGE_OFFSET      17
+#define MICROBIT_STORAGE_SCRATCH_PAGE_OFFSET    19
+
+struct KeyValuePair
+{
+	uint8_t key[16];
+	uint8_t value[32];
+};
+
+struct KeyValueStore
+{
+	uint32_t magic;
+	uint32_t size;
+
+	KeyValueStore(uint32_t magic, uint32_t size)
+	{
+		this->magic = magic;
+		this->size = size;
+	}
+
+	KeyValueStore()
+	{
+		this->magic = 0;
+		this->size = 0;
+	}
+};
+
+*/
 
 /**
   * @brief Class definition for the MicroBit File system
@@ -398,7 +431,10 @@ class MicroBitFileSystem
 
 	void flashPageErase(uint32_t * page_address);
 
-    public:
+
+    
+
+	public:
 
     static MicroBitFileSystem *defaultFileSystem;
 

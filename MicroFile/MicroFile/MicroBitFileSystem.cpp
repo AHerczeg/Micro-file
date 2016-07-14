@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <stddef.h>
 #include <string.h>
 #include <stdint.h>
@@ -9,10 +10,15 @@
 //#include "MicroBitStorage.h"
 #include "ErrorNo.h"
 
+/* EXPERIMENTAL CODE
+
+
 // Symbols provided by the linker script.
 extern uint32_t __data_end__;
 extern uint32_t __data_start__;
 extern uint32_t __etext;
+*/
+
 
 
 MicroBitFileSystem* MicroBitFileSystem::defaultFileSystem = NULL;
@@ -374,9 +380,138 @@ int MicroBitFileSystem::fd_valid(int fd)
     return (fd>=0 && fd < MAX_FD && this->fd_table[fd]);
 }
 
+// EXPERIMENTAL CODE
+
+
 void MicroBitFileSystem::flashPageErase(uint32_t * page_address)
 {
+	free(page_address);
 }
+
+/* EXPERIMENTAL CODE
+
+int MicroBitFileSystem::keyValuePut(const char * key, uint8_t * data, int dataSize)
+{
+	KeyValuePair pair = KeyValuePair();
+
+	int keySize = strlen(key) + 1;
+
+	if (keySize > (int)sizeof(pair.key) || dataSize > (int)sizeof(pair.value) || dataSize < 0)
+		return MICROBIT_INVALID_PARAMETER;
+
+	memcpy(pair.key, key, keySize);
+	memcpy(pair.value, data, dataSize);
+
+	//calculate our various offsets.
+	uint32_t pg_size = NRF_FICR->CODESIZE;
+	uint32_t *flashPointer = (uint32_t *)(pg_size * (NRF_FICR->CODESIZE - MICROBIT_STORAGE_STORE_PAGE_OFFSET));
+	uint32_t *flashBlockPointer = flashPointer;
+	uint32_t *scratchPointer = (uint32_t *)(pg_size * (NRF_FICR->CODESIZE - MICROBIT_STORAGE_SCRATCH_PAGE_OFFSET));
+
+	uint32_t kvStoreSize = sizeof(KeyValueStore) / 4;
+	uint32_t kvPairSize = sizeof(KeyValuePair) / 4;
+
+	int storeSize = size();
+
+	//our KeyValueStore struct is always at 0
+	flashPointer += kvStoreSize;
+
+	KeyValuePair storedPair = KeyValuePair();
+
+	int found = 0;
+
+	//erase our scratch page
+	flashPageErase(scratchPointer);
+
+	//iterate through key value pairs in flash, writing them to the scratch page.
+	for (int i = 0; i < storeSize; i++)
+	{
+		memcpy(&storedPair, flashPointer, sizeof(KeyValuePair));
+
+		//check if the keys match...
+		if (strcmp((char *)storedPair.key, (char *)pair.key) == 0)
+		{
+			found = 1;
+			//scratch our KeyValueStore struct so that it is preserved.
+			scratchKeyValueStore(KeyValueStore(MICROBIT_STORAGE_MAGIC, storeSize));
+			scratchKeyValuePair(pair, flashPointer);
+		}
+		else
+		{
+			scratchKeyValuePair(storedPair, flashPointer);
+		}
+
+		flashPointer += kvPairSize;
+	}
+
+	if (!found)
+	{
+		//if we haven't got a match for the key, check we can add a new KeyValuePair
+		if (storeSize == (int)((pg_size - kvStoreSize) / MICROBIT_STORAGE_BLOCK_SIZE))
+			return MICROBIT_NO_RESOURCES;
+
+		storeSize += 1;
+
+		//scratch our updated values.
+		scratchKeyValueStore(KeyValueStore(MICROBIT_STORAGE_MAGIC, storeSize));
+		scratchKeyValuePair(pair, flashPointer);
+	}
+
+	//erase our storage page
+	flashPageErase((uint32_t *)flashBlockPointer);
+
+	//copy from scratch to storage.
+	flashCopy((uint32_t *)(pg_size * (NRF_FICR->CODESIZE - MICROBIT_STORAGE_SCRATCH_PAGE_OFFSET)), flashBlockPointer, kvStoreSize + (storeSize * kvPairSize));
+
+	return MICROBIT_OK;
+}
+
+KeyValuePair * MicroBitFileSystem::keyValueGet(const char * key)
+{
+	//calculate our offsets for our storage page
+    uint32_t pg_size = NRF_FICR->CODEPAGESIZE;
+    uint32_t pg_num  = NRF_FICR->CODESIZE - MICROBIT_STORAGE_STORE_PAGE_OFFSET;
+
+    uint32_t *flashBlockPointer = (uint32_t *)(pg_size * pg_num);
+
+    int storeSize = size();
+
+    //we haven't got anything stored, so return...
+    if(storeSize == 0)
+        return NULL;
+
+    //our KeyValueStore struct is always at 0
+    flashBlockPointer += sizeof(KeyValueStore) / 4;
+
+    KeyValuePair *pair = new KeyValuePair();
+
+    int i;
+
+    //iterate through flash until we have a match, or drop out.
+    for(i = 0; i < storeSize; i++)
+    {
+        memcpy(pair, flashBlockPointer, sizeof(KeyValuePair));
+
+        if(strcmp(key,(char *)pair->key) == 0)
+            break;
+
+        flashBlockPointer += sizeof(KeyValuePair) / 4;
+    }
+
+    //clean up
+    if(i == storeSize)
+    {
+        delete pair;
+        return NULL;
+    }
+
+    return pair;
+}
+*/
+
+
+
+
 
 /**
   * Constructor. Creates an instance of a MicroBitFileSystem.
@@ -421,7 +556,11 @@ int MicroBitFileSystem::init(uint32_t flash_start, int flash_pages)
         // This is: __etext (program code) + static data.
         // Size of static data is calculated from __data_end__ and __data_start__
         // (See the linker script)
-        flash_start = (uint32_t)&__etext + ((uint32_t)&__data_end__ - (uint32_t)&__data_start__);
+        
+		
+		// EXPERIMENTAL CODE
+		
+		//flash_start = (uint32_t)&__etext + ((uint32_t)&__data_end__ - (uint32_t)&__data_start__);
 
     flash_start = (flash_start & ~0x3FF) + PAGE_SIZE;
 
@@ -439,9 +578,12 @@ int MicroBitFileSystem::init(uint32_t flash_start, int flash_pages)
 
     this->flash_start = (uint8_t*)flash_start + PAGE_SIZE;
 
+
+	/* EXPERIMENTAL CODE
+
     // Make sure that the key-value pair entry for the file system start
     // and size is present and correct.
-    struct KeyValuePair * flash_kv = kv.get("MBFS_START");
+    struct KeyValuePair * flash_kv = keyValueGet("MBFS_START");
     uint32_t* savedLocation = NULL;
     if(flash_kv)
         memcpy(&savedLocation, flash_kv->value, sizeof(uint32_t*));
@@ -451,8 +593,10 @@ int MicroBitFileSystem::init(uint32_t flash_start, int flash_pages)
         uint32_t save[2];
         save[0] = (uint32_t)flash_start;
         save[1] = (uint32_t)flash_pages;
-        kv.put("MBFS_START", (uint8_t*)&save, sizeof(save));
+        keyValuePut("MBFS_START", (uint8_t*)&save, sizeof(save));
     }
+	*/
+
 
     return MICROBIT_OK;
 }
