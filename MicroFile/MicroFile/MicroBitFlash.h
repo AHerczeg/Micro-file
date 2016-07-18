@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+// EXPERIMENTAL CODE
 #define DEFAULT_SCRATCH_ADDR 0x3B000
 #define PAGE_SIZE 1024
 
@@ -132,6 +133,10 @@ class MicroBitFlash
       */
     int flash_erase_mem(uint8_t* address, int length,
                         uint8_t* scratch_addr);
+
+
+	// EXPERIMENTAL CODE
+	int MicroBitFlash::flash_write_dummy(uint8_t* address, uint8_t* from_buffer, int length, uint8_t* scratch_addr);
 
 };
 

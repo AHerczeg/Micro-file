@@ -562,6 +562,9 @@ int MicroBitFileSystem::init(uint32_t flash_start, int flash_pages)
 		
 		//flash_start = (uint32_t)&__etext + ((uint32_t)&__data_end__ - (uint32_t)&__data_start__);
 
+
+
+
     flash_start = (flash_start & ~0x3FF) + PAGE_SIZE;
 
     if(flash_pages == MBFS_USE_DEFAULT || flash_pages < 0)

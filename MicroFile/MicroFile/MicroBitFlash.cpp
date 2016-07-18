@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <stdlib.h>
 #include "MicroBitFlash.h"
 
 
@@ -44,6 +45,8 @@ int MicroBitFlash::need_erase(uint8_t* source, uint8_t* flash_addr, int len)
 void MicroBitFlash::erase_page(uint32_t* pg_addr) 
 {
 
+	free(pg_addr);
+
 	/*
     EXPERIMENTAL CODE
 	
@@ -73,6 +76,10 @@ void MicroBitFlash::erase_page(uint32_t* pg_addr)
   */
 void MicroBitFlash::flash_burn(uint32_t* addr, uint32_t* buffer, int size) 
 {
+
+	for (int i = 0; i < size; i++)
+		*(addr + i) = *(buffer + i);
+
 	/*
 	EXPERIMENTAL CODE
 
@@ -117,7 +124,6 @@ void MicroBitFlash::flash_burn(uint32_t* addr, uint32_t* buffer, int size)
 int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
     uint8_t write_byte, int length, flash_mode m, uint8_t* scratch_addr)
 {
-
     // Check that scratch_addr is aligned on a page boundary.
     if((uint32_t)scratch_addr & 0x3FF) 
     {
@@ -141,13 +147,22 @@ int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
     uint8_t* writeFrom = (uint8_t*)pgAddr;
     int start = WORD_ADDR(offset);
     int end = WORD_ADDR((offset+length+4));
-    int erase = need_erase(from_buffer, address, length);
 
+	/* ???  need_erase will always receive null pointer for from_buffer
+
+	int erase = need_erase(from_buffer, address, length);
+
+	*/
+
+	int erase = from_buffer != NULL ? need_erase(from_buffer, address, length) : 0;
+
+	erase = 0;
     // Preserve the data by writing to the scratch page.
     if(erase) 
     {
+		// ??? Problem with default scratch_addr
         this->flash_burn((uint32_t*)scratch_addr, pgAddr, PAGE_SIZE/4);
-        this->erase_page(pgAddr);
+		this->erase_page(pgAddr);
         writeFrom = (uint8_t*)scratch_addr;
         start = 0;
         end = PAGE_SIZE;
@@ -283,4 +298,12 @@ int MicroBitFlash::flash_erase_mem(uint8_t* address, int length,
         return this->flash_write_mem(address, NULL, 0xff, length, 
                                      WR_MEMSET, scratch_addr);
     }
+}
+
+// EXPERIMENTAL CODE
+
+int MicroBitFlash::flash_write_dummy(uint8_t* address, uint8_t* from_buffer, int length, uint8_t* scratch_addr)
+{
+	flash_burn((uint32_t*)address, (uint32_t*)from_buffer, length);
+	return 0;
 }
