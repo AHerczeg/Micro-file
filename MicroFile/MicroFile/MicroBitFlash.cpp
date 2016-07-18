@@ -42,10 +42,11 @@ int MicroBitFlash::need_erase(uint8_t* source, uint8_t* flash_addr, int len)
   * Erase an entire page
   * @param page_address address of first word of page
   */
-void MicroBitFlash::erase_page(uint32_t* pg_addr) 
+void MicroBitFlash::erase_page(uint32_t* pg_addr)
 {
+	for (int i = 0; i < 256; i++)
+		*(pg_addr + i) = 0xFFFFFFFF;
 
-	free(pg_addr);
 
 	/*
     EXPERIMENTAL CODE
@@ -77,9 +78,10 @@ void MicroBitFlash::erase_page(uint32_t* pg_addr)
 void MicroBitFlash::flash_burn(uint32_t* addr, uint32_t* buffer, int size) 
 {
 
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < size; i++) {
+		//printf("Writefrom: %d\n", (*(buffer + i)));
 		*(addr + i) = *(buffer + i);
-
+	}
 	/*
 	EXPERIMENTAL CODE
 
@@ -125,10 +127,10 @@ int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
     uint8_t write_byte, int length, flash_mode m, uint8_t* scratch_addr)
 {
     // Check that scratch_addr is aligned on a page boundary.
-    if((uint32_t)scratch_addr & 0x3FF) 
-    {
-        return 0;
-    }
+    //if((uint32_t)scratch_addr & 0x3FF) 
+    //{
+    //   return 0;
+    //}
 
     // page number.
     int page = (uint32_t)address / PAGE_SIZE;
@@ -156,12 +158,18 @@ int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
 
 	int erase = from_buffer != NULL ? need_erase(from_buffer, address, length) : 0;
 
-	erase = 0;
+	printf("Need erase: %d\n", erase);
+
+	//erase = 0;
     // Preserve the data by writing to the scratch page.
     if(erase) 
     {
 		// ??? Problem with default scratch_addr
         this->flash_burn((uint32_t*)scratch_addr, pgAddr, PAGE_SIZE/4);
+		int i = 0;
+		for (i = 0; i < 5; i++)
+			printf("Scratch: %d\n", *scratch_addr);
+		while (1) {}
 		this->erase_page(pgAddr);
         writeFrom = (uint8_t*)scratch_addr;
         start = 0;

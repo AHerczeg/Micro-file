@@ -1,0 +1,16 @@
+﻿  stdafx.cpp
+  MicroFile.cpp
+  MicroBitFlash.cpp
+c:\users\andras\documents\github\micro-file\microfile\microfile\microbitflash.cpp(128): warning C4311: 'type cast': pointer truncation from 'uint8_t *' to 'uint32_t'
+c:\users\andras\documents\github\micro-file\microfile\microfile\microbitflash.cpp(128): warning C4302: 'type cast': truncation from 'uint8_t *' to 'uint32_t'
+c:\users\andras\documents\github\micro-file\microfile\microfile\microbitflash.cpp(134): warning C4311: 'type cast': pointer truncation from 'uint8_t *' to 'uint32_t'
+c:\users\andras\documents\github\micro-file\microfile\microfile\microbitflash.cpp(134): warning C4302: 'type cast': truncation from 'uint8_t *' to 'uint32_t'
+c:\users\andras\documents\github\micro-file\microfile\microfile\microbitflash.cpp(137): warning C4312: 'type cast': conversion from 'int' to 'uint32_t *' of greater size
+c:\users\andras\documents\github\micro-file\microfile\microfile\microbitflash.cpp(140): warning C4311: 'type cast': pointer truncation from 'uint8_t *' to 'uint32_t'
+c:\users\andras\documents\github\micro-file\microfile\microfile\microbitflash.cpp(140): warning C4302: 'type cast': truncation from 'uint8_t *' to 'uint32_t'
+  MicroBitFileSystem.cpp
+c:\users\andras\documents\github\micro-file\microfile\microfile\microbitfilesystem.cpp(76): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\andras\documents\github\micro-file\microfile\microfile\microbitfilesystem.cpp(577): warning C4312: 'type cast': conversion from 'uint32_t' to 'uint8_t *' of greater size
+c:\users\andras\documents\github\micro-file\microfile\microfile\microbitfilesystem.cpp(582): warning C4312: 'type cast': conversion from 'uint32_t' to 'uint8_t *' of greater size
+  Generating Code...
+  MicroFile.vcxproj -> C:\Users\Andras\Documents\GitHub\Micro-file\MicroFile\x64\Debug\MicroFile.exe
