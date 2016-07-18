@@ -136,7 +136,8 @@ int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
     int page = (uint32_t)address / PAGE_SIZE;
 
     //page address.
-    uint32_t* pgAddr = (uint32_t*)(page * PAGE_SIZE);
+	//uint32_t* pgAddr = (uint32_t*)address;
+	uint32_t* pgAddr = (uint32_t*)(page * PAGE_SIZE);
 
     // offset to write from within page.
     int offset = (uint32_t)address % PAGE_SIZE;
@@ -158,18 +159,14 @@ int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
 
 	int erase = from_buffer != NULL ? need_erase(from_buffer, address, length) : 0;
 
-	printf("Need erase: %d\n", erase);
+	//printf("Scratch address: %p\n", scratch_addr);
 
 	//erase = 0;
-    // Preserve the data by writing to the scratch page.
-    if(erase) 
+    // Preserve the data by writing to the scratch page
+	if(erase) 
     {
 		// ??? Problem with default scratch_addr
-        this->flash_burn((uint32_t*)scratch_addr, pgAddr, PAGE_SIZE/4);
-		int i = 0;
-		for (i = 0; i < 5; i++)
-			printf("Scratch: %d\n", *scratch_addr);
-		while (1) {}
+		this->flash_burn((uint32_t*)scratch_addr, pgAddr, PAGE_SIZE/4);
 		this->erase_page(pgAddr);
         writeFrom = (uint8_t*)scratch_addr;
         start = 0;

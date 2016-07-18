@@ -6,9 +6,17 @@
 #include "MicroBitFlash.h"
 #include "MicroBitFileSystem.h"
 
-//uint8_t* byteArray[4];
+/*
+
+	FAT TABLE: 0-1023
+	ROOT DIRECTORY: 1024-2047
+	DEFAULT SCRATCHPAGE: 2048-3071
+
+*/
 
 uint8_t flash[61440];
+
+
 
 
 int main()
@@ -21,11 +29,11 @@ int main()
 		testArray[i] = 0x00 + i;
 	for (i = 0; i < 61439; i++)
 		flash[i] = 0xFF;
-	mf.flash_write(&flash[2048], testArray, 5, &flash[0]);
-	mf.flash_write(&flash[2048], &testArray[2], 1, &flash[0]);
-	//mf.flash_erase_mem((uint8_t*)(byteArray[3]), 2, NULL);
+	mf.flash_write(&flash[3072], &testArray[1], 1, &flash[2048]);
+	mf.flash_write(&flash[3072], &testArray[2], 1, &flash[2048]);
+	//mf.flash_erase_mem(&flash[2048], 2, NULL);
 	for (i = 0; i < 10; i++)
-		printf("%d\n", flash[2048+i]);
+		printf("%d\n", flash[3072+i]);
 	while(1){}
     return 0;
 }
