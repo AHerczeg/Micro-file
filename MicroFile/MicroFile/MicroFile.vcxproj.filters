@@ -30,10 +30,13 @@
     <ClInclude Include="MicroBitFileSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ErrorNo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="MicroBitFlash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ErrorNo.h">
+    <ClInclude Include="MicroBitFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -47,7 +50,7 @@
     <ClCompile Include="MicroBitFlash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MicroBitFileSystem_old.cpp">
+    <ClCompile Include="MicroBitFileSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
