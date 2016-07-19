@@ -1,2 +1,22 @@
-﻿  MicroBitFlash.cpp
-  MicroFile.vcxproj -> C:\Users\Andras\Documents\Visual Studio 2015\Projects\MicroFile\Debug\MicroFile.exe
+﻿Build started 18/07/2016 14:39:29.
+     1>Project "\\lancs\homes\01\ornberg\My Desktop\micro-file\MicroFile\MicroFile\MicroFile.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Yc"stdafx.h" /Fp"Debug\MicroFile.pch" /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
+         stdafx.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Yu"stdafx.h" /Fp"Debug\MicroFile.pch" /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt MicroBitFileSystem.cpp MicroBitFlash.cpp MicroFile.cpp
+         MicroFile.cpp
+     1>\\lancs\homes\01\ornberg\my desktop\micro-file\microfile\microfile\microfile.cpp(25): warning C4101: 'j': unreferenced local variable
+         MicroBitFlash.cpp
+         MicroBitFileSystem.cpp
+         Generating Code...
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"\\lancs\homes\01\ornberg\My Desktop\micro-file\MicroFile\Debug\MicroFile.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"\\lancs\homes\01\ornberg\My Desktop\micro-file\MicroFile\Debug\MicroFile.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"\\lancs\homes\01\ornberg\My Desktop\micro-file\MicroFile\Debug\MicroFile.lib" /MACHINE:X86 Debug\MicroBitFileSystem.obj
+         Debug\MicroBitFlash.obj
+         Debug\MicroFile.obj
+         Debug\stdafx.obj
+         MicroFile.vcxproj -> \\lancs\homes\01\ornberg\My Desktop\micro-file\MicroFile\Debug\MicroFile.exe
+     1>Done Building Project "\\lancs\homes\01\ornberg\My Desktop\micro-file\MicroFile\MicroFile\MicroFile.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:02.92

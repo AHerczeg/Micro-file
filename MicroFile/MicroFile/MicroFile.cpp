@@ -22,6 +22,8 @@ uint8_t flash[61440];
 int main()
 {
 
+	MicroBitFileSystem fs;
+
 	int i, j;
 	MicroBitFlash mf;
 	uint8_t testArray[10];

@@ -44,10 +44,10 @@
     <ClCompile Include="MicroFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MicroBitFileSystem.cpp">
+    <ClCompile Include="MicroBitFlash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MicroBitFlash.cpp">
+    <ClCompile Include="MicroBitFileSystem_old.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
