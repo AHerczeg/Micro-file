@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "MicroBitConfig.h"
 
+
 /**
   * Base class for payload for ref-counted objects. Used by ManagedString and MicroBitImage.
   * There is no constructor, as this struct is typically malloc()ed.

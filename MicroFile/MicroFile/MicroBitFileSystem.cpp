@@ -5,10 +5,11 @@
 #include <stdlib.h>
 #include <algorithm>
 #include "MicroBitConfig.h"
-#include "ManagedString.h"
+//#include "ManagedString.h"
 #include "MicroBitFileSystem.h"
 #include "MicroBitFlash.h"
 #include "ErrorNo.h"
+
 
 #define FAT 1
 #define BLOCK_SIZE 256
@@ -17,7 +18,7 @@
 #define TEMP_ROOT_PAGE 1
 #define TEMP_SCRATCH_PAGE 2
 
-#define UPPER_BYTE(a) ((a & 0xFF00) - 0xFF)
+#define UPPER_BYTE(a) ((a | 0x00FF) - 0xFF)
 #define LOWER_BYTE(a) (a & 0xFF)
 
 #define FLASH_SPACE 61440
@@ -26,7 +27,7 @@ uint8_t flash[FLASH_SPACE];
 uint8_t *fat_page;
 uint8_t *root_page;
 uint8_t *scratch_page = &flash[TEMP_SCRATCH_PAGE * PAGE_SIZE];
-uint8_t free_blocks;
+int free_blocks;
 
 MicroBitFileSystem::MicroBitFileSystem() 
 {
@@ -43,27 +44,30 @@ MicroBitFileSystem::MicroBitFileSystem()
 	root_page = &(flash[TEMP_ROOT_PAGE * PAGE_SIZE]);
 	free_blocks = (FLASH_SPACE - (3 * PAGE_SIZE)) / BLOCK_SIZE;
 
-
+	// occupy fat_entry with actual fat & root directory blocks
+	for (int i = 0; i < 24; i++)
+		flash[i] = 0x00;
 }
 
 MicroBitFlash mf; //TODO place this appropriately
-int MicroBitFileSystem::add(char *file_name, uint8_t *byte_array, int length)
+int MicroBitFileSystem::create(char *file_name, uint8_t *byte_array, int length)
 {
 	//Check filename length, return FILENAME_TOO_LONG if too long
 	int file_name_length = strlen(file_name);
 	if (file_name_length > 16)
-		return 0;
+		return 1;
 
-	else if (file_name_length < 16)
-		file_name_length = 16;
+	file_name_length = 16;
 
 	//Check if filename is unique, return EXISTING_FILE if not
 	if (this->fileExists(file_name))
-		return 0;
+		return 2;
+
+	// Space left in root directory?
 
 	//Check space left, return OUT_OF_SPACE if there's not enough space
-	if (length <= free_blocks * BLOCK_SIZE)
-		return 0;
+	if (length >= free_blocks * BLOCK_SIZE)
+		return 3;
 
 	//Write to memory/fat
 	//get random blocks, as described by algorithm
@@ -85,7 +89,7 @@ int MicroBitFileSystem::add(char *file_name, uint8_t *byte_array, int length)
 
 
 	//Return MICROBIT_OK on success, return ERROR otherwise
-	return 0; // DELETE
+	return 1; // DELETE
 }
 
 /*
@@ -93,7 +97,7 @@ int MicroBitFileSystem::add(ManagedString file_name, uint8_t *byte_array, int le
 {
 	return this->add(file_name.toCharArray(), byte_array, length);
 }
-*/
+
 
 int MicroBitFileSystem::add(char *file_name)
 {
@@ -101,6 +105,7 @@ int MicroBitFileSystem::add(char *file_name)
 
 	return 0; // DELETE
 }
+*/
 
 int MicroBitFileSystem::fileExists(char *file_name)
 {
@@ -113,7 +118,7 @@ int MicroBitFileSystem::fileExists(char *file_name)
 				if (flash[i + c] != file_name[c])
 					break;
 
-				else if (flash[i + c] == 0 || c == 16-1)
+				else if (flash[i + c] == 0xFF || c == 15)
 					return 1;
 			}
 		}
@@ -125,22 +130,56 @@ int MicroBitFileSystem::fileExists(char *file_name)
 
 void MicroBitFileSystem::print()
 {
-	for (int i = 0; i < 16; i++)
-		printf("%c", flash[1024+i]);
-	for (int i = 16; i < 24; i++)
-		printf(" %d", flash[1024+i]);
+	bool zero = 0;
+	for (int i = 0; i < FLASH_SPACE; i++) {
+		if (flash[i] != 0xFF) {
+			printf("%c", flash[i]);
+			zero = false;
+		}
+		else if (!zero) {
+			printf("\n\n");
+			zero = true;
+		}
+	}
 }
 
 uint8_t MicroBitFileSystem::write(uint8_t *byte_array, int length)
 {
-	uint16_t *blocks = [(length / BLOCK_SIZE) + 1];
+	int blocks_needed = length / BLOCK_SIZE + 1;
+	
+	if (length % BLOCK_SIZE == 0)
+		blocks_needed--;
 
-	// Generate set of index numbers for free blocks OR just do this loop once per block needed
+	uint8_t fat_entry = 0x00;
 
-	for (int i = (TEMP_FAT_PAGE * PAGE_SIZE); i < ((TEMP_FAT_PAGE + 1) * PAGE_SIZE); i += 2) {
+	for (int i = blocks_needed - 1; i >= 0; i--) {
+		
+		int r = std::rand() % free_blocks;
+		printf("Random: %d\n", r);
+		uint8_t block_number = 0;
 
+		while (r) {
+			if (flash[(TEMP_FAT_PAGE * PAGE_SIZE) + block_number * 2] == 0xFF)
+				r--;
+			block_number++;
+		}
+
+		flash[(TEMP_FAT_PAGE * PAGE_SIZE) + block_number * 2] = UPPER_BYTE(fat_entry); // TODO flash_memset
+		flash[((TEMP_FAT_PAGE * PAGE_SIZE) + block_number * 2) + 1] = LOWER_BYTE(fat_entry); // TODO flash_memset
+		fat_entry = block_number;
+
+		//write actual data
+		uint8_t *byte = byte_array + (i * BLOCK_SIZE);
+		int byte_length = length - (i * BLOCK_SIZE);
+		length -= byte_length;
+		printf("i: %d, length: %d, byte_length: %d, block_number: %d\n", i, length, byte_length, block_number);
+		mf.flash_write(&flash[block_number * BLOCK_SIZE], byte, byte_length, scratch_page);
 	}
+
+	free_blocks -= blocks_needed;
+	return fat_entry;
 }
+
 
 int MicroBitFileSystem::remove(char *fileName) {
 	//Find file, if not found return FILE_NOT_FOUND

@@ -161,7 +161,7 @@ int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
 
 	//printf("Scratch address: %p\n", scratch_addr);
 
-	//erase = 0;
+	//int erase = 0;
     // Preserve the data by writing to the scratch page
 	if(erase) 
     {

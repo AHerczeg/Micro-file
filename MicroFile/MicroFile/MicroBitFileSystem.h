@@ -32,6 +32,7 @@ class MicroBitFileSystem {
 
 	private:
 
+	uint8_t write(uint8_t *byte_array, int length);
 
 	public:
 
@@ -41,9 +42,9 @@ class MicroBitFileSystem {
 
 	//int close(MicroBitFile file);
 
-	int add(char *file_name, uint8_t *byte_array, int length);
+	int create(char *file_name, uint8_t *byte_array, int length);
 
-	int add(char *file_name);
+	//int add(char *file_name);
 
 	int fileExists(char *file_name);
 
