@@ -41,11 +41,13 @@ class MicroBitFileSystem {
 
 	//int close(MicroBitFile file);
 
-	int add(char *filename, uint8_t *byteArray, int length);
+	int add(char *file_name, uint8_t *byte_array, int length);
 
-	int add(char *filename);
+	int add(char *file_name);
 
-	int remove(char *fileName);
+	int fileExists(char *file_name);
+
+	int remove(char *file_name);
 	
 	int format();
 

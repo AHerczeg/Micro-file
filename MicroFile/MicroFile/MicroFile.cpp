@@ -14,10 +14,6 @@
 
 */
 
-uint8_t flash2[61440];
-
-
-
 
 int main()
 {

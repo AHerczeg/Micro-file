@@ -39,6 +39,12 @@
     <ClInclude Include="MicroBitFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ManagedString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RefCounted.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -51,6 +57,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MicroBitFileSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ManagedString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RefCounted.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

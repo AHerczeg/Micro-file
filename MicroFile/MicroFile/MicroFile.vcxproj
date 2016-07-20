@@ -146,17 +146,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorNo.h" />
+    <ClInclude Include="ManagedString.h" />
     <ClInclude Include="MicroBitConfig.h" />
     <ClInclude Include="MicroBitFile.h" />
     <ClInclude Include="MicroBitFileSystem.h" />
     <ClInclude Include="MicroBitFlash.h" />
+    <ClInclude Include="RefCounted.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ManagedString.cpp" />
     <ClCompile Include="MicroBitFileSystem.cpp" />
     <ClCompile Include="MicroBitFlash.cpp" />
     <ClCompile Include="MicroFile.cpp" />
+    <ClCompile Include="RefCounted.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
