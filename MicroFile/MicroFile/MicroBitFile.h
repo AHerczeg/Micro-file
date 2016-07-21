@@ -1,7 +1,7 @@
 #ifndef MICROBIT_FILE_H
 #define MICROBIT_FILE_H
 
-#include "mbed.h"
+//#include "mbed.h"
 #include "MicroBitConfig.h"
 #include "MicroBitFileSystem.h"
 #include "ManagedString.h"
@@ -9,8 +9,9 @@
 class MicroBitFile
 {
 
-    int fileHandle;
-    ManagedString fileName;
+    //int fileHandle;
+    //ManagedString fileName;
+	int index;
 
     public:
 

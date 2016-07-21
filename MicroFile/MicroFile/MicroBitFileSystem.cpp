@@ -26,8 +26,12 @@ uint8_t flash[FLASH_SPACE];
 
 uint8_t *fat_page;
 uint8_t *root_page;
+uint8_t *default_scratch_page;
 uint8_t *scratch_page = &flash[TEMP_SCRATCH_PAGE * PAGE_SIZE];
 int free_blocks;
+
+MicroBitFlash mf; //TODO place this appropriately
+
 
 MicroBitFileSystem::MicroBitFileSystem() 
 {
@@ -49,32 +53,39 @@ MicroBitFileSystem::MicroBitFileSystem()
 		flash[i] = 0x00;
 }
 
-MicroBitFlash mf; //TODO place this appropriately
+
+
 int MicroBitFileSystem::create(char *file_name, uint8_t *byte_array, int length)
 {
 	//Check filename length, return FILENAME_TOO_LONG if too long
 	int file_name_length = strlen(file_name);
 	if (file_name_length > 16)
-		return 1;
+		return 1; // TODO filename too long error
 
 	file_name_length = 16;
 
 	//Check if filename is unique, return EXISTING_FILE if not
 	if (this->fileExists(file_name))
-		return 2;
+		return 0; //todo return error message
 
-	// Space left in root directory?
+	//Check if space in root directory
+	uint8_t root_entry;
+	if (root_entry = this->getFreeRootEntry() == NULL)
+		return 0; //todo insert error message here
+
 
 	//Check space left, return OUT_OF_SPACE if there's not enough space
 	if (length >= free_blocks * BLOCK_SIZE)
-		return 3;
+		return 3;  // todo  return error 
+
+
 
 	//Write to memory/fat
 	//get random blocks, as described by algorithm
 	uint8_t first_block = this->write(byte_array, length);
 
 	// Add to root directory
-	mf.flash_write(&flash[1024], (uint8_t *)file_name, file_name_length, &flash[2048]);
+	mf.flash_write(&flash[1024], (uint8_t *)file_name, file_name_length, getRandomScratch());
 
 	// Two writes are not going to take a toll on flash int terms of wear, as it is 
 	// initialized to 0xFF and we only change the each bit maximum once in this operation
@@ -85,75 +96,24 @@ int MicroBitFileSystem::create(char *file_name, uint8_t *byte_array, int length)
 	file_entry[3] = 0xFF; //more flags
 	file_entry[6] = UPPER_BYTE(length); // size part I
 	file_entry[7] = LOWER_BYTE(length); // size part II
-	mf.flash_write(root_page+16, file_entry, 8, scratch_page);
+	mf.flash_write(root_page+16, file_entry, 8, getRandomScratch());
 
 
 	//Return MICROBIT_OK on success, return ERROR otherwise
 	return 1; // DELETE
 }
 
-/*
-int MicroBitFileSystem::add(ManagedString file_name, uint8_t *byte_array, int length)
-{
-	return this->add(file_name.toCharArray(), byte_array, length);
-}
-
-
-int MicroBitFileSystem::add(char *file_name)
-{
-	return this->add(file_name, NULL, 0);
-
-	return 0; // DELETE
-}
-*/
-
-int MicroBitFileSystem::fileExists(char *file_name)
-{
-	// Check all 24 byte blocks in root directory
-	for (int i = (TEMP_ROOT_PAGE * PAGE_SIZE); i < ((TEMP_ROOT_PAGE+1) * PAGE_SIZE); i += 24) {
-		
-		// If !free and valid (not deleted) flags are set
-		if (~flash[i] & 0x7F  && flash[i] & 0x40) {
-			for (int c = 0; c < 16; c++) {
-				if (flash[i + c] != file_name[c])
-					break;
-
-				else if (flash[i + c] == 0xFF || c == 15)
-					return 1;
-			}
-		}
-	}
-
-	return 0;
-}
- 
-
-void MicroBitFileSystem::print()
-{
-	bool zero = 0;
-	for (int i = 0; i < FLASH_SPACE; i++) {
-		if (flash[i] != 0xFF) {
-			printf("%c", flash[i]);
-			zero = false;
-		}
-		else if (!zero) {
-			printf("\n\n");
-			zero = true;
-		}
-	}
-}
-
 uint8_t MicroBitFileSystem::write(uint8_t *byte_array, int length)
 {
 	int blocks_needed = length / BLOCK_SIZE + 1;
-	
+
 	if (length % BLOCK_SIZE == 0)
 		blocks_needed--;
 
-	uint8_t fat_entry = 0x00;
+	uint8_t fat_entry = 0xFE;
 
 	for (int i = blocks_needed - 1; i >= 0; i--) {
-		
+
 		int r = std::rand() % free_blocks;
 		printf("Random: %d\n", r);
 		uint8_t block_number = 0;
@@ -173,12 +133,120 @@ uint8_t MicroBitFileSystem::write(uint8_t *byte_array, int length)
 		int byte_length = length - (i * BLOCK_SIZE);
 		length -= byte_length;
 		printf("i: %d, length: %d, byte_length: %d, block_number: %d\n", i, length, byte_length, block_number);
-		mf.flash_write(&flash[block_number * BLOCK_SIZE], byte, byte_length, scratch_page);
+		mf.flash_write(&flash[block_number * BLOCK_SIZE], byte, byte_length, getRandomScratch());
 	}
 
 	free_blocks -= blocks_needed;
 	return fat_entry;
 }
+
+
+
+uint8_t * MicroBitFileSystem::getRootEntry(int i)
+{
+	if (i > 42) //todo make dynamic
+		return NULL;
+	i = i * 24;
+	return (root_page + i);
+}
+
+
+bool MicroBitFileSystem::fileExists(char *file_name)
+{
+	if (this->getFileIndex(file_name) >= 0)
+		return true;
+	else
+		return false;
+}
+
+uint8_t * MicroBitFileSystem::getFreeRootEntry()
+{
+	uint8_t *entry_deleted = NULL;
+	uint8_t *root_entry = root_page;
+
+	for (int i = 0; root_entry != NULL; i++) {
+		root_entry = getRootEntry(i);
+
+		if (*root_entry == 0xFF)
+			return root_entry;
+
+		if (~root_entry[18] & 0x40 && entry_deleted == NULL) // bitwise magic
+			entry_deleted = root_entry;
+	}
+
+	if (entry_deleted != NULL) {
+		root_entry = root_page;
+		uint8_t *scratch = getRandomScratch();
+		
+		for (int i = 0; root_entry != NULL; i++) {
+			root_entry = getRootEntry(i);
+			if (~root_entry[18] & 0x40) {
+				uint32_t reset = 0xFFFFFFFF; //todo move these to top?
+				for (int j = 0; j < 24/4; j ++)
+					mf.flash_burn( ( (uint32_t *) scratch) + j, &reset, 1);
+			}
+			else {
+				mf.flash_burn((uint32_t *) scratch, (uint32_t *)root_entry, 24/4);
+			}
+			scratch += 24;
+		}
+		//mf.flash_burn((uint32_t *)scratch, );
+
+		mf.erase_page((uint32_t *) scratch);
+	}
+
+
+	return NULL; //root directory full
+}
+
+uint8_t * MicroBitFileSystem::getRandomScratch()
+{
+	return scratch_page;
+}
+
+
+int MicroBitFileSystem::getFileIndex(char *file_name)
+{
+	uint8_t * root_entry = root_page;
+	for (int i = 0; root_entry != NULL; i++) {
+		root_entry = getRootEntry(i);
+
+		if (*root_entry == 0xFF)
+			return -1; //TODO write error code
+	
+		if (~(root_entry[18]) & 0x7F && (root_entry[18]) & 0x40) {
+			for (int c = 0; c < 16; c++) {
+				if (root_entry[c] != file_name[c])
+					break;
+
+				else if (root_entry[c] == 0xFF || c == 15)
+					return i;
+			}
+		}
+	};
+
+	return -1;
+}
+ 
+
+
+// Test function
+void MicroBitFileSystem::print()
+{
+	bool zero = 0;
+	for (int i = 0; i < FLASH_SPACE; i++) {
+		if (flash[i] != 0xFF) {
+			printf("%c", flash[i]);
+			zero = false;
+		}
+		else if (!zero) {
+			printf("\n\n");
+			zero = true;
+		}
+	}
+}
+
+
 
 
 int MicroBitFileSystem::remove(char *fileName) {
@@ -189,6 +257,7 @@ int MicroBitFileSystem::remove(char *fileName) {
 	//Return MICROBIT_OK on success, return ERROR otherwise
 	return 0; // DELETE
 }
+
 
 /*
 int MicroBitFileSystem::close(MicroBitFile file) {

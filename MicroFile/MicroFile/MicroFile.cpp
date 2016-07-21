@@ -21,24 +21,44 @@ int main()
 
 	MicroBitFileSystem fs;
 	uint8_t number = 64;
-	MicroBitFile importantNumber("important number", &number, 1); //create
-	MicroBitFile importantNumber("important number"); // , &number, 1); //open
+	MicroBitFlash mf;
 	
-	importantNumber.read(importantNumber.length);
+	uint8_t flashSomething[5000];
+	for (int i = 0; i < 5000; i++)
+		flashSomething[i] = 0x00;
 
-	ManagedString s("juwngiujerg");
+	uint32_t reset = 0x01020304;
+	int i;
+	uint8_t mem[24] = { 0x01, 0x02, 0x03, 0x04, 0x01, 0x02, 0x03, 0x04, 0x01, 0x02, 0x03, 0x04, 0x01, 0x02, 0x03, 0x04, 0x01, 0x02, 0x03, 0x04, 0x01, 0x02, 0x03, 0x04};
+	for (i = 0; i < 24/4; i++)
+		mf.flash_burn(((uint32_t *) &flashSomething[1024]) + i, (uint32_t *)&reset, 1);
+	for (i = 0; i < 30; i++)
+		printf("%d: %d\n", i, flashSomething[1024 + i]);
+	
+	//uint32_t *p2 = (uint32_t *) &mem[0];
+
+	//printf("%d, %d\n", *p1, *p2);
+	//printf("%d, %d", *++p1, *++p2);
+	
+
+	//MicroBitFile importantNumber("important number", &number, 1); //create
+	//MicroBitFile importantNumber("important number"); // , &number, 1); //open
+	
+	//importantNumber.read(importantNumber.length);
+
+	//ManagedString s("juwngiujerg");
 	//MicroBitFile new_file = MicroBitFile.open();
 	
 	//MicroBitFile important_number = fs.create("important number", &number, 1);
 	//MicroBitFile war_and_peace = fs.create("war & peace.txt", value, 1972);
 	//printf("RUN: %d -- ", fs.add("file.txt", &number, 1));
-	fs.print();
+	//fs.print();
 
-	for (int i = 0; i < war_and_peace.size; i += 65) {
+	//for (int i = 0; i < war_and_peace.size; i += 65) {
 
-		printf("%s", (char *) war_and_peace.read());
-	}
-	uint8_t * important_number2 = important_number.read(important_number.size);
+		//printf("%s", (char *) war_and_peace.read());
+	//}
+	//uint8_t * important_number2 = important_number.read(important_number.size);
 
 	while(1){}
     return 0;

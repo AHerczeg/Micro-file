@@ -36,9 +36,6 @@
     <ClInclude Include="MicroBitFlash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MicroBitFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -51,9 +48,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MicroBitFileSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MicroBitFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

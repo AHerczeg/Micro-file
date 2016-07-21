@@ -79,7 +79,7 @@ void MicroBitFlash::flash_burn(uint32_t* addr, uint32_t* buffer, int size)
 {
 
 	for (int i = 0; i < size; i++) {
-		//printf("Writefrom: %d\n", (*(buffer + i)));
+		//printf("%p", addr);
 		*(addr + i) = *(buffer + i);
 	}
 	/*
@@ -177,9 +177,9 @@ int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
 
     for(int i=start;i<end;i++) 
     {
-        int byteOffset = i%4;
+        int byteOffset = i%4; // 0-3
 
-        if(i >= offset && i < (offset + length)) 
+        if(i >= offset && i < (offset + length)) //Make sure we won't trail off 
         {
             if(m == WR_WRITE) 
             {

@@ -17,22 +17,6 @@ class MicroBitFlash
 {
     private:
 
-    /**
-      * Erase an entire page.
-      * @param page_address address of first word of page.
-      */
-    void erase_page(uint32_t* page_address);
-
-    /**
-      * Write to flash memory, assuming that a write is valid
-      * (using need_erase).
-      * 
-      * @param page_address address of memory to write to. 
-      * 	Must be word aligned.
-      * @param buffer address to write from, must be word-aligned.
-      * @param len number of uint32_t words to write.
-      */
-    void flash_burn(uint32_t* page_address, uint32_t* buffer, int len);
 
     /**
       * Write to address in flash, implementing either flash_write (copy
@@ -133,6 +117,25 @@ class MicroBitFlash
       */
     int flash_erase_mem(uint8_t* address, int length,
                         uint8_t* scratch_addr);
+
+
+
+	/**
+	* Write to flash memory, assuming that a write is valid
+	* (using need_erase).
+	*
+	* @param page_address address of memory to write to.
+	* 	Must be word aligned.
+	* @param buffer address to write from, must be word-aligned.
+	* @param len number of uint32_t words to write.
+	*/
+	void flash_burn(uint32_t* page_address, uint32_t* buffer, int len);
+
+	/**
+	* Erase an entire page.
+	* @param page_address address of first word of page.
+	*/
+	void erase_page(uint32_t* page_address);
 
 
 	// EXPERIMENTAL CODE

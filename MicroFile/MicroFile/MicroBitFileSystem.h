@@ -34,6 +34,16 @@ class MicroBitFileSystem {
 
 	uint8_t write(uint8_t *byte_array, int length);
 
+	uint8_t *getRootEntry(int i);
+
+	uint8_t *getFreeRootEntry();
+
+	int getFileIndex(char *file_name);
+
+	bool fileExists(char *file_name);
+
+	uint8_t *getRandomScratch();
+
 	public:
 
 	MicroBitFileSystem();
@@ -43,10 +53,6 @@ class MicroBitFileSystem {
 	//int close(MicroBitFile file);
 
 	int create(char *file_name, uint8_t *byte_array, int length);
-
-	//int add(char *file_name);
-
-	int fileExists(char *file_name);
 
 	int remove(char *file_name);
 	
