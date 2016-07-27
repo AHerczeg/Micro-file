@@ -124,49 +124,23 @@ void MicroBitFlash::flash_burn(uint32_t* addr, uint32_t* buffer, int size)
   * @return non-zero on success, zero on error.
   */
 int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
-    uint8_t write_byte, int length, flash_mode m, uint8_t* scratch_addr)
+    uint8_t write_byte, int length, flash_mode mode, uint8_t* scratch_addr)
 {
-    // Check that scratch_addr is aligned on a page boundary.
-    //if((uint32_t)scratch_addr & 0x3FF) 
-    //{
-    //   return 0;
-    //}
-
-    // page number.
+	//page address.
     int page = (uint32_t)address / PAGE_SIZE;
-
-    //page address.
-	//uint32_t* pgAddr = (uint32_t*)address;
 	uint32_t* pgAddr = (uint32_t*)(page * PAGE_SIZE);
 
     // offset to write from within page.
     int offset = (uint32_t)address % PAGE_SIZE;
 
-    // uBit.serial.printf("flash_write to 0x%x, from 0x%x, length: 0x%x\n",
-    //       	     address, from_buffer, length);
-    // uBit.serial.printf(" - offset = %d, pgAddr = 0x%x, page = %d\n",
-    //                    offset, pgAddr, page);
-
     uint8_t* writeFrom = (uint8_t*)pgAddr;
     int start = WORD_ADDR(offset);
     int end = WORD_ADDR((offset+length+4));
 
-	/* ???  need_erase will always receive null pointer for from_buffer
-
-	int erase = need_erase(from_buffer, address, length);
-
-	*/
-
 	int erase = from_buffer != NULL ? need_erase(from_buffer, address, length) : 0;
 
-	//printf("Scratch address: %p\n", scratch_addr);
-
-	//int erase = 0;
-    // Preserve the data by writing to the scratch page
-	if(erase) 
-    {
-		// ??? Problem with default scratch_addr
-		this->flash_burn((uint32_t*)scratch_addr, pgAddr, PAGE_SIZE/4);
+	if (erase) {
+		this->flash_burn((uint32_t*)scratch_addr, pgAddr, PAGE_SIZE/4); //4 times, as we do 4 bytes at a time
 		this->erase_page(pgAddr);
         writeFrom = (uint8_t*)scratch_addr;
         start = 0;
@@ -174,31 +148,20 @@ int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
     }
 
     uint32_t writeWord = 0;
+    for(int i = start; i < end; i++) {
+        int byteOffset = i % 4; // 0-3
 
-    for(int i=start;i<end;i++) 
-    {
-        int byteOffset = i%4; // 0-3
-
-        if(i >= offset && i < (offset + length)) //Make sure we won't trail off 
-        {
-            if(m == WR_WRITE) 
-            {
-                // Write from buffer.
+        if (i >= offset && i < (offset + length)) { //Make sure we won't trail off 
+            if (mode == WR_WRITE) // Write from buffer.
                 writeWord |= (from_buffer[i-offset] << ((byteOffset)*8));
-            }
-            else if(m == WR_MEMSET) 
-            {
-                // Write constant.
+
+            else if (mode == WR_MEMSET) // Write constant.   
                 writeWord |= ((uint32_t)write_byte << (byteOffset*8));
-            }
         }
         else 
-        {
             writeWord |= (writeFrom[i] << ((byteOffset)*8));
-        }
 
-        if( ((i+1)%4) == 0) 
-        {
+        if( ((i+1)%4) == 0) {
             this->flash_burn(pgAddr + (i/4), &writeWord, 1);
             writeWord = 0;
         }
@@ -212,6 +175,10 @@ int MicroBitFlash::flash_write_mem(uint8_t* address, uint8_t* from_buffer,
 
     return 1;
 }
+
+
+
+
 
 /**
   * Writes the given number of bytes to the address in flash specified.
@@ -305,10 +272,3 @@ int MicroBitFlash::flash_erase_mem(uint8_t* address, int length,
     }
 }
 
-// EXPERIMENTAL CODE
-
-int MicroBitFlash::flash_write_dummy(uint8_t* address, uint8_t* from_buffer, int length, uint8_t* scratch_addr)
-{
-	flash_burn((uint32_t*)address, (uint32_t*)from_buffer, length);
-	return 0;
-}

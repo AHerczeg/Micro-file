@@ -32,7 +32,7 @@ class MicroBitFileSystem {
 
 	private:
 
-	uint8_t write(uint8_t *byte_array, int length);
+	uint16_t write(uint8_t *byte_array, int length);
 
 	uint8_t *getRootEntry(int i);
 

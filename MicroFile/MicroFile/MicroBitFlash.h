@@ -137,10 +137,6 @@ class MicroBitFlash
 	*/
 	void erase_page(uint32_t* page_address);
 
-
-	// EXPERIMENTAL CODE
-	int MicroBitFlash::flash_write_dummy(uint8_t* address, uint8_t* from_buffer, int length, uint8_t* scratch_addr);
-
 };
 
 #endif

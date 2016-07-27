@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "MicroBitFlash.h"
 #include "MicroBitFileSystem.h"
+#include <string>
 
 /*
 
@@ -23,6 +24,23 @@ int main()
 	uint8_t number = 64;
 	MicroBitFlash mf;
 	
+	/*
+	char buffer[3];
+	for (int i = 1; i < 50; i++) {
+		std::string s = std::to_string(i);
+		char s2[4];
+		strncpy_s(s2, s.c_str(), sizeof(s2));
+		fs.create(s2, (uint8_t *) &i, 1);
+	}
+	*/
+
+	fs.create("war and peace", value, 1972);
+	fs.print();
+	
+
+	//fs.create("special number", &number, 1);
+	//fs.create("war and peace", value, 1972);
+	/*
 	uint8_t flashSomething[5000];
 	for (int i = 0; i < 5000; i++)
 		flashSomething[i] = 0x00;
@@ -34,7 +52,7 @@ int main()
 		mf.flash_burn(((uint32_t *) &flashSomething[1024]) + i, (uint32_t *)&reset, 1);
 	for (i = 0; i < 30; i++)
 		printf("%d: %d\n", i, flashSomething[1024 + i]);
-	
+	*/
 	//uint32_t *p2 = (uint32_t *) &mem[0];
 
 	//printf("%d, %d\n", *p1, *p2);
@@ -59,6 +77,8 @@ int main()
 		//printf("%s", (char *) war_and_peace.read());
 	//}
 	//uint8_t * important_number2 = important_number.read(important_number.size);
+
+	printf("END");
 
 	while(1){}
     return 0;
