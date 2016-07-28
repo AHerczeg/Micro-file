@@ -37,9 +37,9 @@ int main()
 		//fs.print();
 	}
 	
-	//fs.remove("20");
+	fs.remove("17");
 	//fs.create("20", &number, 1);
-	//fs.create("war and peace", value, 1972);
+	fs.create("war and peace", value, 3072);
 	fs.print();
 	
 

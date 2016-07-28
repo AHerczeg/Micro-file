@@ -37,6 +37,8 @@ class MicroBitFileSystem {
 	uint8_t *getRootEntry(int i);
 
 	uint8_t *getFreeRootEntry();
+	
+	int clearFat();
 
 	int getFileIndex(char *file_name);
 

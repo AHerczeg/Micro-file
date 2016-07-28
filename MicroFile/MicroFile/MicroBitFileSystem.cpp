@@ -89,8 +89,6 @@ int MicroBitFileSystem::create(char *file_name, uint8_t *byte_array, int length)
 			clearFat();
 	}
 		 
-
-
 	//Write to memory/fat
 	uint16_t first_block = this->write(byte_array, length);
 
@@ -127,7 +125,10 @@ uint16_t MicroBitFileSystem::write(uint8_t *byte_array, int length)
 		int r = (free_blocks == 1) ? 1 : ((std::rand() % (free_blocks - 1)) + 1);
 		int block_number = -1;
 
+
+		int j = 0;
 		while (r) { //todo make for loop out of this
+			j++;
 			block_number++;
 			uint16_t checked_block = *(fat_page + block_number);
 			if (checked_block == 0xFFFF) // consider 2 bytes at a time
@@ -141,6 +142,8 @@ uint16_t MicroBitFileSystem::write(uint8_t *byte_array, int length)
 		uint8_t *byte = byte_array + (i * BLOCK_SIZE);
 		int byte_length = length - (i * BLOCK_SIZE);
 		length -= byte_length;
+		if (block_number > 300)
+			block_number = block_number;
 		mf.flash_write(&flash[0] + block_number * BLOCK_SIZE, byte, byte_length, getRandomScratch());
 		//printf("END:FREE %d\n", free_blocks);
 		free_blocks --;
@@ -150,15 +153,6 @@ uint16_t MicroBitFileSystem::write(uint8_t *byte_array, int length)
 }
 
 
-
-int clearFat() {
-	uint16_t *fat_entry = fat_page;
-	for (int i = 0; i < PAGE_SIZE * FAT / 2 && i < FLASH_SPACE / BLOCK_SIZE; i++) {
-		if (!(*fat_entry == 0x0000))
-			mf.flash_write(&flash[0] + block_number * BLOCK_SIZE, byte, byte_length, getRandomScratch());
-		fat_entry++;
-	}
-}
 
 uint8_t * MicroBitFileSystem::getRootEntry(int i)
 {
@@ -216,6 +210,25 @@ uint8_t * MicroBitFileSystem::getFreeRootEntry()
 	}
 
 	return NULL; //root directory full
+}
+
+int MicroBitFileSystem::clearFat()
+{
+	uint16_t *fat_entry = fat_page;
+	uint8_t *scratch_page = getRandomScratch();
+	int deleted_blocks = 0;
+	for (int i = 0; i < PAGE_SIZE * FAT / 2 && i < FLASH_SPACE / BLOCK_SIZE; i++) {
+		if (!(*fat_entry == 0x0000))
+			mf.flash_write(scratch_page + i * 2, (uint8_t *)fat_entry, 2, getRandomScratch());
+		else
+			deleted_blocks++;
+		fat_entry++;
+	}
+	mf.erase_page((uint32_t *)fat_page);
+	mf.flash_write((uint8_t *)fat_page, scratch_page, PAGE_SIZE, NULL);
+	mf.erase_page((uint32_t *)scratch_page);
+	free_blocks = deleted_blocks;
+	return 0;
 }
 
 uint8_t * MicroBitFileSystem::getRandomScratch()
@@ -321,7 +334,7 @@ int MicroBitFileSystem::remove(char *file_name) {
 		block_number = *fat_entry;
 
 		mf.flash_memset((uint8_t *) fat_entry, 0x00, 2, NULL);
-		free_blocks--;
+		//free_blocks--;
 		
 		if (block_number == 0xFFFE) // Last fat entry deleted is end of file
 			break;
