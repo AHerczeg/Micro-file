@@ -47,7 +47,7 @@ class MicroBitFileSystem {
 	public:
 
 	MicroBitFileSystem();
-
+	
 	//MicroBitFile open(char *fileName);
 
 	//int close(MicroBitFile file);

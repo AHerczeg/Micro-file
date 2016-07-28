@@ -31,9 +31,12 @@ int MicroBitFlash::need_erase(uint8_t* source, uint8_t* flash_addr, int len)
     // O & ~N != 0
     // Where O = original, and N = new byte.
 
-    for(;len>0;len--) 
+    for(; len > 0; len--) 
     {
-        if((~*(flash_addr++) & *(source++)) != 0x00) return 1;
+		//uint8_t original = *flash_addr;
+		//uint8_t new_byte = *source;
+        if((~*(flash_addr++) & *(source++)) != 0x00) 
+			return 1;
     }
     return 0;
 }
