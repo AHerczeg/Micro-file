@@ -14,7 +14,14 @@
 
 #define MAX_FILESYSTEM_PAGES 60 // Max. number of pages available.
 
+// FAT & Directory Flags
+#define UNUSED 0xFFFF
+#define EOF 0xFFFE 
+#define DELETED 0x0000
 
+#define IS_FREE 0x8000
+#define IS_VALID 0x4000
+#define IS_DIRECTORY 0x2000
 
 // open() flags.
 #define MB_READ 0x01
@@ -27,20 +34,31 @@
 #define MB_SEEK_END 0x02
 #define MB_SEEK_CUR 0x04
 
+struct FileDescriptor
+{
+	char file_name[16];
+	uint16_t first_block;
+	uint16_t flags;
+	uint32_t length;
+};
+
 class MicroBitFileSystem {
 	
+	uint8_t *flash_address;
+	uint16_t *fat_page;
+	uint8_t *root_dir;
+	int free_blocks;
+	MicroBitFlash mf;
 
 	private:
 
 	uint16_t write(uint8_t *byte_array, int length);
 
-	uint8_t *getRootEntry(int i);
+	FileDescriptor *getFileDescriptor(int i);
 
-	uint8_t *getFreeRootEntry();
+	FileDescriptor *getNextFileDescriptor(FileDescriptor * fd);
 	
 	int clearFat();
-
-	int getFileIndex(char *file_name);
 
 	bool fileExists(char *file_name);
 
@@ -64,12 +82,5 @@ class MicroBitFileSystem {
 
 };
 
-struct File
-{
-	char * name;
-	uint8_t firstBlock;
-	uint8_t flags;
-	int length;
-};
 
 #endif
