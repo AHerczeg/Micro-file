@@ -13,7 +13,7 @@
 #define DOT_DOT 2 // Length of block number of parent directory
 #define MAX_FILESYSTEM_PAGES 60 // Max. number of pages available.
 
-#define PAGE_OFFSET(a) (a % PAGE_SIZE)
+#define PAGE_OFFSET(a) ((int) a % PAGE_SIZE)
 #define PAGE_START(a) (a - PAGE_OFFSET(a))
 // FAT & File Descriptor flags
 #define UNUSED 0xFFFF
@@ -58,17 +58,21 @@ class MicroBitFileSystem {
 
 	uint16_t write(uint8_t *byte_array, int length);
 
+	FileDescriptor *defragmentDirectory(uint8_t *directory);
+
 	FileDescriptor *getFileDescriptor(char *file_name, uint8_t *directory);
 
 	int clearFat();
 
-	bool fileExists(char *file_name);
+	bool fileDescriptorExists(char *file_name, uint8_t *directory);
+
+	uint16_t getBlockNumber(uint8_t *address);
 
 	uint8_t *getRandomScratch();
 
-	uint8_t *getBlockByNumber(uint16_t block_number);
+	uint8_t *getBlock(uint16_t block_number);
 
-	uint16_t *getFATEntryByNumber(uint16_t entry_number);
+	uint16_t *getFATEntry(uint8_t *address);
 
 	uint8_t *get(uint16_t index, bool get_block);
 
@@ -84,9 +88,11 @@ class MicroBitFileSystem {
 
 	//int close(MicroBitFile file);
 
+	int create(char *file_name, uint8_t *byte_array, int length, uint8_t * directory);
+
 	int create(char *file_name, uint8_t *byte_array, int length);
 
-	int remove(char *file_name);
+	int remove(char *file_name, uint8_t * directory);
 
 	int format();
 
