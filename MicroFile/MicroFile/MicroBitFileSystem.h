@@ -56,47 +56,46 @@ class MicroBitFileSystem {
 
 	private:
 
-	uint16_t write(uint8_t *byte_array, int length);
+		uint16_t write(uint8_t *byte_array, int length);
 
-	FileDescriptor *defragmentDirectory(uint8_t *directory);
+		FileDescriptor *defragment(uint8_t *directory);
+		inline void completePartialCopy(uint8_t * scratch_address, uint8_t *block_to_skip);
 
-	FileDescriptor *getFileDescriptor(char *file_name, uint8_t *directory);
+		FileDescriptor *findFileDescriptor(char *file_name, uint8_t *directory);
 
-	int clearFat();
+		int clearFat();
 
-	bool fileDescriptorExists(char *file_name, uint8_t *directory);
+		bool fileDescriptorExists(char *file_name, uint8_t *directory);
 
-	uint16_t getBlockNumber(uint8_t *address);
+		bool validBlockNumber(uint16_t block_number);
 
-	uint8_t *getRandomScratch();
+		uint16_t getBlockNumber(uint8_t *address);
 
-	uint8_t *getBlock(uint16_t block_number);
+		uint8_t *getRandomScratch();
 
-	uint16_t *getFATEntry(uint8_t *address);
+		uint8_t* getBlockAddress(uint16_t block_number);
+		uint8_t *getNextBlock(uint8_t *block_address);
+		uint16_t* getTableAddress(uint8_t *block_address);
+		uint16_t* getTableAddress(uint16_t block_number);
 
-	uint8_t *get(uint16_t index, bool get_block);
+		uint16_t* getFATEntry(uint8_t *address);
 
-	FileDescriptor *getFirstFileDescriptor(uint8_t *directory);
+		uint8_t *get(uint16_t index, bool get_block);
 
-	FileDescriptor *getNextFileDescriptor(FileDescriptor *fd);
+		FileDescriptor *getFirstFileDescriptor(uint8_t *directory);
+		FileDescriptor *getNextFileDescriptor(FileDescriptor *fd);
+
 
 	public:
 
-	MicroBitFileSystem();
-
-	//MicroBitFile open(char *fileName);
-
-	//int close(MicroBitFile file);
-
-	int create(char *file_name, uint8_t *byte_array, int length, uint8_t * directory);
-
-	int create(char *file_name, uint8_t *byte_array, int length);
-
-	int remove(char *file_name, uint8_t * directory);
-
-	int format();
-
-	void print();
+		MicroBitFileSystem();
+	
+		int create(char *file_name, uint8_t *byte_array, int length, uint8_t * directory);
+		int create(char *file_name, uint8_t *byte_array, int length);
+	
+		int remove(char *file_name, uint8_t * directory);
+	
+		void print();
 
 };
 
