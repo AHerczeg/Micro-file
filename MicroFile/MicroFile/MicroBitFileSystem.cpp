@@ -15,6 +15,8 @@
 #define FLASH_SPACE 61440
 uint8_t flash_memory[FLASH_SPACE];
 
+MicroBitFileSystem* MicroBitFileSystem::defaultFileSystem = NULL;
+
 
 MicroBitFileSystem::MicroBitFileSystem()
 {
@@ -41,6 +43,9 @@ MicroBitFileSystem::MicroBitFileSystem()
 		*fat_entry = 0xFFFE;
 		fat_entry++;
 	}
+
+	if (MicroBitFileSystem::defaultFileSystem == NULL)
+		MicroBitFileSystem::defaultFileSystem = this;
 }
 
 

@@ -54,6 +54,8 @@ class MicroBitFileSystem {
 	uint16_t free_blocks;
 	MicroBitFlash mf;
 
+	
+
 	private:
 
 		uint16_t write(uint8_t *byte_array, int length);
@@ -87,6 +89,8 @@ class MicroBitFileSystem {
 
 
 	public:
+
+		static MicroBitFileSystem *defaultFileSystem;
 
 		MicroBitFileSystem();
 	
