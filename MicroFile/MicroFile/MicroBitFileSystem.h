@@ -57,7 +57,8 @@ class MicroBitFileSystem {
 	
 
 	private:
-
+		uint16_t getRandomFreeBlock();
+		bool freeSpace(int length);
 		uint16_t write(uint8_t *byte_array, int length);
 
 		FileDescriptor *defragment(uint8_t *directory);
