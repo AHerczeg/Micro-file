@@ -6,13 +6,16 @@
 
 class MicroBitFile
 {
+	// Do we need all this?
 	//int fileHandle;
 	char * file_name;
 	uint8_t * file_directory;
 	//MicroBitFileSystem fs;
 	uint8_t * read_pointer;
-	uint8_t flags;
-
+	FileDescriptor * fd;
+	MicroBitFileSystem *fileSystem; // Or move to .cpp?
+	int offset; // There has to be a better way
+ 
 	private:
 
 	public:
@@ -21,19 +24,29 @@ class MicroBitFile
 
 	MicroBitFile(char *file_name, uint8_t * directory);
 
-	int open(uint8_t flags);
-
-	int close(); 
+	int close(); // TODO
 	
-	int seek(int offset);
+	int setPosition(int offset);
+
+	int getPosition();
+
+	int read();
 
 	int read(char * buffer, int length);
 
-	int write();
+	int write(const char *bytes, int len); // TODO
 
-	int append();
+	int append(const char *bytes, int len);
+
+	void operator+=(const char c);
+
+	void operator+=(const char* s);
 
 	int length();
+
+	int move(uint8_t * directory); // TODO
+
+	int remove();
 
 };
 
