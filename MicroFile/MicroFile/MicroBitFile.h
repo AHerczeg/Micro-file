@@ -13,14 +13,14 @@ class MicroBitFile
 	//MicroBitFileSystem fs;
 	uint8_t * read_pointer;
 	FileDescriptor * fd;
-	MicroBitFileSystem *fileSystem; // Or move to .cpp?
+	MicroBitFileSystem *fileSystem; // Or move to .cpp? also is it better as static?
 	int offset; // There has to be a better way
  
 	private:
 
 	public:
 
-	MicroBitFile(char *file_name);
+	MicroBitFile(char *file_name) : MicroBitFile(file_name, NULL) {};
 
 	MicroBitFile(char *file_name, uint8_t * directory);
 

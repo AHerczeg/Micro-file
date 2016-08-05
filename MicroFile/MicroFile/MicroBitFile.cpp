@@ -6,20 +6,28 @@
 #include <string.h>
 
 
+
+//TODO Rework overload
+/*
 MicroBitFile::MicroBitFile(char * name)
 {
-	fileSystem = MicroBitFileSystem::defaultFileSystem;
+	this->fileSystem = MicroBitFileSystem::defaultFileSystem;
+	this->file_name = name;
 	MicroBitFile(name, (*fileSystem).getRoot());
 }
+*/
 
 MicroBitFile::MicroBitFile(char * name, uint8_t* directory)
 {
-	fileSystem = MicroBitFileSystem::defaultFileSystem;
-	this->file_name = name;
-	this->file_directory = directory;
+	this->fileSystem = MicroBitFileSystem::defaultFileSystem;
+	this->file_name  = name;
+	if (directory == NULL)
+		this->file_directory = (*fileSystem).getRoot();
+	else
+		this->file_directory = directory;
 	this->fd = (*fileSystem).findFileDescriptor(name, file_directory);
 	this->offset = 0;
-	read_pointer = (*fileSystem).getBlockAddress(fd->first_block); //Check FAT table to find the start of the data
+	this->read_pointer = (*fileSystem).getBlockAddress(fd->first_block); //Check FAT table to find the start of the data
 }
 
 
@@ -28,8 +36,11 @@ int MicroBitFile::close() {
 	//Check if File valid, if not return ERROR
 	if (!(*fileSystem).fileDescriptorExists(this->file_name, this->file_directory))
 		return -1; // TODO add error message
-	//Find fd, release flags
-	//Return 1 on success, return ERROR
+	
+
+	//Update 
+
+
 
 	return 0; // DELETE
 }
@@ -92,7 +103,7 @@ int MicroBitFile::read(char * buffer, int length) {
 
 	for (int i = 0; i < length; i++) {
 		buffer[i] = *(this->read_pointer);
-		if (i > 0 && i % BLOCK_SIZE != 0) {
+		if (i > 0 && i % BLOCK_SIZE == 0) {
 			if ((*fileSystem).getNextBlock(read_pointer) != NULL)
 				this->read_pointer = (*fileSystem).getNextBlock(read_pointer);
 			else
@@ -100,6 +111,7 @@ int MicroBitFile::read(char * buffer, int length) {
 		}
 		else
 			this->read_pointer++;
+		offset++;
 	}
 	return 0; // DELETE
 }
@@ -111,6 +123,16 @@ int MicroBitFile::write(const char *bytes, int len) {
 	//Check if File valid, if not return ERROR
 	if (!(*fileSystem).fileDescriptorExists(this->file_name, this->file_directory))
 		return -1; // TODO add error message
+
+	// Check if we need to allocate new block
+	if (this->offset + len > this->fd->length)
+		// Check if we have enough space in the FAT
+		// if( ( ( (this->offset + len) - this->fd->length) / BLOCK_SIZE) > fs.getFreeBlocks())
+			// return Error
+
+	// Use mf.write (or fs.write?)
+	// Consider offset, if we hit the end of the file && not Eof fs.getNextBlock
+		// else we need to allocate new block
 
 	return 0; // DELETE
 }
@@ -162,5 +184,6 @@ int MicroBitFile::remove()
 	if (!(*fileSystem).fileDescriptorExists(this->file_name, this->file_directory))
 		return -1; // TODO add error message
 	(*fileSystem).remove(this->file_name, this->file_directory);
+	delete this;
 	return 0;
 }
