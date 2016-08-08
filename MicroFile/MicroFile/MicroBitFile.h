@@ -16,6 +16,8 @@ class MicroBitFile
 	MicroBitFileSystem *fileSystem; // Or move to .cpp? also is it better as static?
 	int offset; // There has to be a better way
  
+	MicroBitFlash mf;
+
 	private:
 
 	public:
