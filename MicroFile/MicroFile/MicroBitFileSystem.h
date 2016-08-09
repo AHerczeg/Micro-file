@@ -15,6 +15,7 @@
 
 #define PAGE_OFFSET(a) ((int) a % PAGE_SIZE)
 #define PAGE_START(a) (a - PAGE_OFFSET(a))
+
 // FAT & File Descriptor flags
 #define UNUSED 0xFFFF
 #define EOF 0xFFFE
@@ -47,7 +48,7 @@ struct FileDescriptor
 
 class MicroBitFileSystem {
 
-	uint8_t *flash_address; //todo is base_address a better name?
+	uint8_t *flash_address;
 	uint16_t *fat_page;
 	uint8_t fat_length;
 	uint8_t *root_dir;
@@ -58,15 +59,17 @@ class MicroBitFileSystem {
 
 	private:
 		uint16_t getRandomFreeBlock();
-		bool freeSpace(int length);
+		uint8_t* getDirectory(char * directory);
+		int freeSpace(int length);
 		uint16_t write(uint8_t *byte_array, int length);
+		FileDescriptor *newFileDescriptor(uint8_t *directory, bool allow_expand);
+		uint8_t* getParentDirAddress(uint8_t *directory);
+		uint8_t* getParentDirAddress(FileDescriptor *fd);
 
-		FileDescriptor *defragment(uint8_t *directory);
-		inline void completePartialCopy(uint8_t * scratch_address, uint8_t *block_to_skip);
+		FileDescriptor *clearDirectory(uint8_t *directory);
+		inline void copyNeighboringBlocks(uint8_t * scratch_address, uint8_t *block_to_skip);
 
-		FileDescriptor *findFileDescriptor(char *file_name, uint8_t *directory);
-
-		int clearFat();
+		FileDescriptor *findFileDescriptor(char * file_name, bool is_directory, uint8_t * directory);
 
 		bool fileDescriptorExists(char *file_name, uint8_t *directory);
 
@@ -87,18 +90,21 @@ class MicroBitFileSystem {
 
 		FileDescriptor *getFirstFileDescriptor(uint8_t *directory);
 		FileDescriptor *getNextFileDescriptor(FileDescriptor *fd);
-
+		int remove(char * file_name, bool is_directory, uint8_t * directory);
+		void deleteTableEntries(uint16_t block_number);
 
 	public:
 
 		static MicroBitFileSystem *defaultFileSystem;
 
 		MicroBitFileSystem();
+
+		int createDirectory(char * file_path);
 	
-		int create(char *file_name, uint8_t *byte_array, int length, uint8_t * directory);
-		int create(char *file_name, uint8_t *byte_array, int length);
-	
-		int remove(char *file_name, uint8_t * directory);
+		int createFile(char * file_name, char * directory);
+		int createFile(char *file_name, uint8_t *byte_array, int length, char *directory);
+		int createDirectory(char *dir_name, uint8_t *target_dir);
+		int createDirectory(char * name, char * target_directory);
 	
 		void print();
 
