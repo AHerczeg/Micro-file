@@ -71,11 +71,7 @@ class MicroBitFileSystem {
 
 		FileDescriptor *findFileDescriptor(char * file_name, bool is_directory, uint8_t * directory);
 
-		bool fileDescriptorExists(char *file_name, uint8_t *directory);
-
 		bool validBlockNumber(uint16_t block_number);
-
-		uint16_t getBlockNumber(uint8_t *address);
 
 		uint8_t *getRandomScratch();
 
@@ -84,26 +80,19 @@ class MicroBitFileSystem {
 		uint16_t* getTableAddress(uint8_t *block_address);
 		uint16_t* getTableAddress(uint16_t block_number);
 
-		uint16_t* getFATEntry(uint8_t *address);
-
-		uint8_t *get(uint16_t index, bool get_block);
 
 		FileDescriptor *getFirstFileDescriptor(uint8_t *directory);
 		FileDescriptor *getNextFileDescriptor(FileDescriptor *fd);
-		int remove(char * file_name, bool is_directory, uint8_t * directory);
+		
 		void deleteTableEntries(uint16_t block_number);
 
 	public:
-
+		int remove(char * file_name, bool is_directory, uint8_t * directory);
 		static MicroBitFileSystem *defaultFileSystem;
 
 		MicroBitFileSystem();
-
-		int createDirectory(char * file_path);
 	
-		int createFile(char * file_name, char * directory);
 		int createFile(char *file_name, uint8_t *byte_array, int length, char *directory);
-		int createDirectory(char *dir_name, uint8_t *target_dir);
 		int createDirectory(char * name, char * target_directory);
 	
 		void print();
