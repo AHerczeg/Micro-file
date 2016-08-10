@@ -3,7 +3,19 @@
 #include "MicroBitFlash.h"
 #include "MicroBitFileSystem.h"
 #include "MicroBitFile.h"
+#include <string.h>
 
+
+
+//TODO Rework overload
+/*
+MicroBitFile::MicroBitFile(char * name)
+{
+	this->fileSystem = MicroBitFileSystem::defaultFileSystem;
+	this->file_name = name;
+	MicroBitFile(name, (*fileSystem).getRoot());
+}
+*/
 
 MicroBitFile::MicroBitFile(char * name, uint8_t* directory)
 {
@@ -16,23 +28,21 @@ MicroBitFile::MicroBitFile(char * name, uint8_t* directory)
 	this->fd = (*fileSystem).findFileDescriptor(name, file_directory);
 	this->offset = 0;
 	this->read_pointer = (*fileSystem).getBlockAddress(fd->first_block); //Check FAT table to find the start of the data
-	this->last_block = (*fileSystem).getTableAddress(fd->first_block);
-	if (*last_block != 0xFFFE) {
-		do
-		{
-			last_block = (*fileSystem).getTableAddress(*last_block);
-		} while (*last_block != 0xFFFE);
-	}
 }
 
 
 
-FileDescriptor * MicroBitFile::close() {
+int MicroBitFile::close() {
 	//Check if File valid, if not return ERROR
 	if (!(*fileSystem).fileDescriptorExists(this->file_name, this->file_directory))
-		return nullptr; // TODO add error message
+		return -1; // TODO add error message
+	
 
-	return this->fd; // DELETE
+	//Update 
+
+
+
+	return 0; // DELETE
 }
 
 
@@ -85,9 +95,14 @@ int MicroBitFile::read(char * buffer, int length) {
 	//Check if File valid, if not return ERROR
 	if (!(*fileSystem).fileDescriptorExists(this->file_name, this->file_directory))
 		return -1; // TODO add error message
-	
+
+	if(sizeof(buffer) < length)
+		return -1; // TODO add error message
+
 	if(length > this->length())
 		return -1; // TODO add error message
+
+	// replace with seek? Probably a good idea
 
 	for (int i = 0; i < length; i++) {
 		buffer[i] = *(this->read_pointer);
@@ -95,55 +110,52 @@ int MicroBitFile::read(char * buffer, int length) {
 			break;
 	}
 
+	/*
+	for (int i = 0; i < length; i++) {
+		buffer[i] = *(this->read_pointer);
+		if (i > 0 && i % BLOCK_SIZE == 0) {
+			if ((*fileSystem).getNextBlock(read_pointer) != NULL)
+				this->read_pointer = (*fileSystem).getNextBlock(read_pointer);
+			else
+				return 0; // TODO add error message maybe?
+		}
+		else
+			this->read_pointer++;
+		offset++;
+	}
+	*/
 	return 0; // DELETE
 }
 
 int MicroBitFile::write(const char *bytes, int len) {
 	
-	// If len + offset > length, we have to change the fd too!
+	// If len > 0, we have to change the fd too!
 	
 	//Check if File valid, if not return ERROR
 	if (!(*fileSystem).fileDescriptorExists(this->file_name, this->file_directory))
 		return -1; // TODO add error message
 
-
+	// Check if we need to allocate new block
+	// Fix (we don't have to allocate a new block if there's enough space left in the current one)
 	if (this->offset + len > this->fd->length) {
 		if ( ( ( (this->offset + len) - this->fd->length) / BLOCK_SIZE) > (*fileSystem).free_blocks) {
 			return -1; // TODO add error message
-		}
-		else {
-			
-			if ((this->offset % BLOCK_SIZE) + len > BLOCK_SIZE) {
-
-				//Almost exactly fs.write()
-				uint16_t table_entry = EOF;
-
-				for (int i = 0; i < (((this->offset + len) - this->fd->length) / BLOCK_SIZE) + 1; i++) {
-					uint16_t block_number = (*fileSystem).getRandomFreeBlock();
-
-					mf.flash_write((uint8_t *)(*fileSystem).getTableAddress(block_number), (uint8_t *)&table_entry, 2, NULL);
-					table_entry = block_number;
-
-					(*fileSystem).free_blocks--;
-				}
-
-				//Change the original 'last block' from EoF to next block
-				mf.flash_write((uint8_t *)last_block, (uint8_t *)&table_entry, 2, (*fileSystem).getRandomScratch());
-
-				last_block = (*fileSystem).getTableAddress(table_entry);
+		} else {
+			this->fd->length += ((this->offset + len) - this->fd->length);
+			for (int i = 0; i < ( ( (this->offset + len) - this->fd->length) / BLOCK_SIZE); i++) {
 
 			}
-
-			this->fd->length += ((this->offset + len) - this->fd->length);
-
+			//allocate new block
+			//repalce EoF with the new block's number 
 		}
 	}
 
+	// Will probably break during testing
 	int written_bytes = 0;
-	for (int i = 0; i <= ( ( (this->offset % BLOCK_SIZE) + len) / BLOCK_SIZE) + 1; i++) {
+	for (int i = 0; i <= ( ( (this->offset % BLOCK_SIZE) + len) / BLOCK_SIZE); i++) {
 		int bytes_to_write = ((BLOCK_SIZE - (this->offset % BLOCK_SIZE)) <= len) ? (BLOCK_SIZE - (this->offset % BLOCK_SIZE)) : len;
 		mf.flash_write(this->read_pointer, (uint8_t *)&bytes[written_bytes], (bytes_to_write), (*fileSystem).getRandomScratch());
-		written_bytes += bytes_to_write;
+		written_bytes += bytes_to_write; //fix this?
 		setPosition(this->offset + bytes_to_write);
 	}
 
@@ -154,9 +166,6 @@ int MicroBitFile::append(const char *bytes, int len) {
 
 	// If len > 0, we have to change the fd too!
 
-	if (len == 0)
-		return 0;
-
 	//Check if File valid, if not return ERROR
 	if (!(*fileSystem).fileDescriptorExists(this->file_name, this->file_directory))
 		return -1; // TODO add error message
@@ -166,9 +175,23 @@ int MicroBitFile::append(const char *bytes, int len) {
 
 	setPosition(this->fd->length);
 
+	//this->offset++;
+
+	//this->read_pointer++;
+
 	write(bytes, len);
 
 	return 0; // DELETE
+}
+
+void MicroBitFile::operator+=(const char c)
+{
+	append(&c, 1);
+}
+
+void MicroBitFile::operator+=(const char * s)
+{
+	append(s, strlen(s));
 }
 
 int MicroBitFile::length() {
@@ -177,6 +200,11 @@ int MicroBitFile::length() {
 		return -1; // TODO add error message
 
 	return this->fd->length; // DELETE
+}
+
+int MicroBitFile::move(uint8_t * directory)
+{
+	return 0;
 }
 
 int MicroBitFile::remove()

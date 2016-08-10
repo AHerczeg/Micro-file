@@ -87,7 +87,13 @@ class MicroBitFileSystem {
 		void deleteTableEntries(uint16_t block_number);
 
 	public:
-		int remove(char * file_name, bool is_directory, uint8_t * directory);
+		int remove(char * file_name);
+		int remove(char * file_name, char * directory);
+		int remove(FileDescriptor * fd); //can be private
+		int removeDirectory(char * folder_name);
+		int removeDirectory(char * folder_name, uint8_t * directory);
+		int removeDirectory(char * folder_name, char * directory);
+		int repeat(FileDescriptor *fd);
 		static MicroBitFileSystem *defaultFileSystem;
 
 		MicroBitFileSystem();
@@ -96,7 +102,7 @@ class MicroBitFileSystem {
 		int createDirectory(char * name, char * target_directory);
 	
 		void print();
-
+		void printDir(uint16_t block_number, int level);
 };
 
 
