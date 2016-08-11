@@ -56,7 +56,6 @@ MicroBitFileSystem::MicroBitFileSystem()
 
 int MicroBitFileSystem::createDirectory(char *name, char *target_directory)
 {
-	printf("££££free_blocks:  %d\n", free_blocks);
 	if (uint8_t *dir = target_directory == NULL ? root_dir : getDirectory(target_directory)) {
 		FileDescriptor *fd;
 		int free_space = freeSpace(1);
@@ -139,7 +138,7 @@ FileDescriptor *MicroBitFileSystem::newFileDescriptor(uint8_t *directory, bool a
 	bool deleted_fds = false;
 	
 	while (fd) {
-		if (fd->flags & DELETED)
+		if (~fd->flags & IS_VALID)
 			deleted_fds = true;
 		else if (fd->flags & IS_FREE)
 			return fd;
@@ -265,13 +264,16 @@ uint16_t MicroBitFileSystem::getRandomFreeBlock()
 
 FileDescriptor* MicroBitFileSystem::clearDirectory(uint8_t *directory)
 {
+	directory = directory - ((directory - flash_address) % BLOCK_SIZE);
 	FileDescriptor *fd = getFirstFileDescriptor(directory);
 	uint8_t max_fds_to_block = BLOCK_SIZE / sizeof(FileDescriptor);
 	uint8_t fds_copied = 0;
 
-	uint8_t *current_block = directory;
+	uint8_t *current_block = directory; //todo replace with directory, this variable is unnecessary
 	uint8_t *scratch_page = getRandomScratch();
-	uint8_t *scratch_write_head = scratch_page + PAGE_OFFSET(current_block);
+	int x = PAGE_OFFSET(current_block) + DOT_DOT;
+	int y = PAGE_OFFSET(scratch_page);
+	uint8_t *scratch_write_head = scratch_page + PAGE_OFFSET(current_block) + DOT_DOT;
 
 	while (fd) {
 		// Create new scratch page when previous is full
@@ -279,7 +281,7 @@ FileDescriptor* MicroBitFileSystem::clearDirectory(uint8_t *directory)
 			copyNeighboringBlocks(scratch_page, current_block);
 			fds_copied = 0;
 			scratch_page = getRandomScratch();
-			scratch_write_head = scratch_page + PAGE_OFFSET(current_block);
+			scratch_write_head = scratch_page + PAGE_OFFSET(current_block) + DOT_DOT;
 		}
 
 		// Copy valid file descriptor
@@ -305,8 +307,10 @@ FileDescriptor* MicroBitFileSystem::clearDirectory(uint8_t *directory)
 	fd = getFirstFileDescriptor(current_block);
 	FileDescriptor *free_fd = fd;
 	while (fd) {
-		if (fd->flags & IS_FREE)
+		if (fd->flags & IS_FREE) {
 			free_fd = fd;
+			break;
+		}
 		fd = getNextFileDescriptor(fd);
 	}
 
@@ -327,7 +331,11 @@ FileDescriptor* MicroBitFileSystem::clearDirectory(uint8_t *directory)
 inline void MicroBitFileSystem::copyNeighboringBlocks(uint8_t * scratch_page, uint8_t *target_block)
 {
 	uint8_t *write_head = scratch_page;
+
 	while (write_head < scratch_page + PAGE_SIZE) {
+		int x = PAGE_OFFSET(write_head);
+		int y = PAGE_OFFSET(target_block);
+
 		if (PAGE_OFFSET(write_head) != PAGE_OFFSET(target_block)) //Skip copying of original_block
 			mf.flash_write(write_head, PAGE_START(target_block) + PAGE_OFFSET(write_head), BLOCK_SIZE, NULL);
 		else // Copy .. (parent block address)
@@ -437,7 +445,10 @@ uint8_t* MicroBitFileSystem::getRandomScratch()
 		else
 			i += step;
 	}
-
+	i++; //becase 0x00 is deleted and not fat entry
+	mf.erase_page((uint32_t *)PAGE_START(getBlockAddress(i)));
+	//mf.flash_erase_mem(getBlockAddress(i), PAGE_SIZE, NULL); //erase page
+	int x = PAGE_OFFSET(getBlockAddress(i));
 	return getBlockAddress(i);
 }
 
@@ -457,7 +468,6 @@ inline uint8_t* MicroBitFileSystem::getParentDirAddress(uint8_t *directory)
 
 inline FileDescriptor* MicroBitFileSystem::getFirstFileDescriptor(uint8_t *directory)
 {
-	int x = ((directory - flash_address) % BLOCK_SIZE); //offset
 	return (FileDescriptor *) ((directory - ((directory - flash_address)  % BLOCK_SIZE)) + DOT_DOT);
 }
 
@@ -509,6 +519,9 @@ FileDescriptor *MicroBitFileSystem::findFileDescriptor(char *file_name, bool is_
 
 uint8_t *MicroBitFileSystem::getDirectory(char *directory)
 {
+	if (!directory)
+		return root_dir; //todo remove higher level checks doing the same thing
+
 	char s[17];
 	char *c = directory;
 
@@ -524,7 +537,7 @@ uint8_t *MicroBitFileSystem::getDirectory(char *directory)
 				return NULL;
 			i = 0;
 			dir = getBlockAddress(fd->first_block);
-			if (++depth == 4)
+			if (++depth == MAX_DEPTH-1)
 				return NULL;
 		}
 		else
@@ -553,13 +566,13 @@ inline uint8_t *MicroBitFileSystem::getNextBlock(uint8_t *block_address)
 
 inline uint16_t* MicroBitFileSystem::getTableAddress(uint8_t *block_address)
 {
-	return getTableAddress((block_address - flash_address) / BLOCK_SIZE);
+	return getTableAddress(((block_address - flash_address) / BLOCK_SIZE) + 1);
 }
 
 inline uint16_t* MicroBitFileSystem::getTableAddress(uint16_t block_number)
 {
 	if (validBlockNumber(block_number))
-		return fat_page + block_number;
+		return fat_page + (block_number - 1);
 
 	return NULL;
 }
@@ -567,18 +580,24 @@ inline uint16_t* MicroBitFileSystem::getTableAddress(uint16_t block_number)
 inline uint8_t* MicroBitFileSystem::getBlockAddress(uint16_t block_number)
 {
 	if (validBlockNumber(block_number))
-		return flash_address + (block_number * BLOCK_SIZE);
+		return flash_address + ((block_number - 1) * BLOCK_SIZE);
 
 	return NULL;
 }
 
 inline bool MicroBitFileSystem::validBlockNumber(uint16_t block_number)
 {
-	if (block_number <= (fat_length * PAGE_SIZE / sizeof(uint16_t)) - META_DATA_LENGTH)
+	if (block_number > DELETED && block_number < EOF &&
+		block_number <= (fat_length * PAGE_SIZE / sizeof(uint16_t)) - META_DATA_LENGTH)
 		return true;
 
 	return false;
 }
+
+
+
+
+
 
 
 
@@ -589,17 +608,17 @@ void MicroBitFileSystem::print()
 {
 
 	//print fat table
-	
+
 	uint16_t *fat_entry = fat_page;
 	for (int i = 0; i < (fat_length * (PAGE_SIZE / sizeof(uint16_t)) - META_DATA_LENGTH); i++) {
 		if (*fat_entry == 0xFFFE)
-			printf("%d: EoF ", i);
+			printf("%d:EoF ", i+1);
 		else if (*fat_entry == 0xFFFF)
 			printf("    ");
 		else if (*fat_entry == 0x0000)
-			printf("%d: --- ", i);
+			printf("%d:--- ", i+1);
 		else
-			printf("%d: %d ", i, *fat_entry);
+			printf("%d:%d ", i+1, *fat_entry);
 
 		fat_entry++;
 	}
@@ -607,7 +626,7 @@ void MicroBitFileSystem::print()
 	
 	
 	//print structure
-	printDir(12, 0);
+	printDir(12+1, 0);
 
 	/*
 	FileDescriptor *fd = getFirstFileDescriptor(root_dir);
@@ -628,8 +647,12 @@ void MicroBitFileSystem::print()
 void MicroBitFileSystem::printDir(uint16_t block_number, int level)
 {
 	FileDescriptor *fd = getFirstFileDescriptor(getBlockAddress(block_number));
+	
 	int j = 0;
 	while (fd) {
+		if (level == 1)
+			printf(" BLOCK_nUMBER: %d::", block_number);
+
 		printf("\n");
 		for (int i = 0; i < level; i++) {
 			printf("  ");

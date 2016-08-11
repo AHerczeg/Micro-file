@@ -13,7 +13,10 @@
 #define DOT_DOT 2 // Length of block number of parent directory
 #define MAX_FILESYSTEM_PAGES 60 // Max. number of pages available.
 
-#define PAGE_OFFSET(a) ((int) a % PAGE_SIZE)
+#define MAX_DEPTH 3
+
+#define PAGE_OFFSET(a) ((a - flash_address) % PAGE_SIZE)
+#define PAGE_OFFSET(a) (((uint8_t *)a - flash_address) % PAGE_SIZE)
 #define PAGE_START(a) (a - PAGE_OFFSET(a))
 
 // FAT & File Descriptor flags
@@ -52,12 +55,19 @@ class MicroBitFileSystem {
 	uint16_t *fat_page;
 	uint8_t fat_length;
 	uint8_t *root_dir;
-	uint16_t free_blocks;
+	
 	MicroBitFlash mf;
 
 	
 
 	private:
+
+
+	public:
+		
+		uint16_t free_blocks;
+		
+		
 		uint16_t getRandomFreeBlock();
 		uint8_t* getDirectory(char * directory);
 		int freeSpace(int length);
@@ -65,6 +75,7 @@ class MicroBitFileSystem {
 		FileDescriptor *newFileDescriptor(uint8_t *directory, bool allow_expand);
 		uint8_t* getParentDirAddress(uint8_t *directory);
 		uint8_t* getParentDirAddress(FileDescriptor *fd);
+
 
 		FileDescriptor *clearDirectory(uint8_t *directory);
 		inline void copyNeighboringBlocks(uint8_t * scratch_address, uint8_t *block_to_skip);
@@ -83,10 +94,15 @@ class MicroBitFileSystem {
 
 		FileDescriptor *getFirstFileDescriptor(uint8_t *directory);
 		FileDescriptor *getNextFileDescriptor(FileDescriptor *fd);
-		
+
 		void deleteTableEntries(uint16_t block_number);
 
-	public:
+
+
+
+
+
+
 		int remove(char * file_name);
 		int remove(char * file_name, char * directory);
 		int remove(FileDescriptor * fd); //can be private

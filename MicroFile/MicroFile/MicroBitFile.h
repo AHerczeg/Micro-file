@@ -36,13 +36,10 @@ class MicroBitFile
 
 	int read(char * buffer, int length);
 
-	int write(const char *bytes, int len); // TODO
+	int write(uint8_t *bytes, int len); // TODO
 
-	int append(const char *bytes, int len);
+	int append(uint8_t *bytes, int len);
 
-	void operator+=(const char c);
-
-	void operator+=(const char* s);
 
 	int length();
 
