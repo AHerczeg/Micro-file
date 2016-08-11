@@ -18,17 +18,24 @@ MicroBitFile::MicroBitFile(char * name)
 */
 
 MicroBitFile::MicroBitFile(char * name, uint8_t* directory)
-{
-	this->fileSystem = MicroBitFileSystem::defaultFileSystem;
-	this->file_name  = name;
-	if (directory == NULL)
-		this->file_directory = (*fileSystem).getDirectory(NULL);
-	else
-		this->file_directory = directory;
-	this->fd = (*fileSystem).findFileDescriptor(name, false, file_directory);
-	this->offset = 0;
-	this->read_pointer = (*fileSystem).getBlockAddress(fd->first_block); //Check FAT table to find the start of the data
-}
+ {
+  	this->fileSystem = MicroBitFileSystem::defaultFileSystem;
+ 	this->file_name  = name;
+ 	if (directory == NULL)
+ 		this->file_directory = (*fileSystem).getRoot();
+ 	else
+ 		this->file_directory = directory;
+  	this->fd = (*fileSystem).findFileDescriptor(name, file_directory);
+  	this->offset = 0;
+  	this->read_pointer = (*fileSystem).getBlockAddress(fd->first_block); //Check FAT table to find the start of the data
+ 	this->last_block = (*fileSystem).getTableAddress(fd->first_block);
+ 	if (*last_block != 0xFFFE) {
+ 		do
+ 		{
+ 			last_block = (*fileSystem).getTableAddress(*last_block);
+ 		} while (*last_block != 0xFFFE);
+ 	}
+  }
 
 
 
@@ -125,21 +132,37 @@ int MicroBitFile::write(uint8_t *bytes, int len) {
 		if ( ( ( (this->offset + len) - this->fd->length) / BLOCK_SIZE) > (*fileSystem).free_blocks) {
 			return -1; // TODO add error message
 		} else {
-			this->fd->length += ((this->offset + len) - this->fd->length);
-			for (int i = 0; i < ( ( (this->offset + len) - this->fd->length) / BLOCK_SIZE); i++) {
-
-			}
-			//allocate new block
-			//repalce EoF with the new block's number 
-		}
+ 			
+ 			if ((this->offset % BLOCK_SIZE) + len > BLOCK_SIZE) {
+ 
+ 				//Almost exactly fs.write()
+ 				uint16_t table_entry = EOF;
+ 
+ 				for (int i = 0; i < (((this->offset + len) - this->fd->length) / BLOCK_SIZE) + 1; i++) {
+ 					uint16_t block_number = (*fileSystem).getRandomFreeBlock();
+ 
+ 					mf.flash_write((uint8_t *)(*fileSystem).getTableAddress(block_number), (uint8_t *)&table_entry, 2, NULL);
+ 					table_entry = block_number;
+ 
+ 					(*fileSystem).free_blocks--;
+ 				}
+ 
+ 				//Change the original 'last block' from EoF to next block
+ 				mf.flash_write((uint8_t *)last_block, (uint8_t *)&table_entry, 2, (*fileSystem).getRandomScratch());
+ 
+ 				last_block = (*fileSystem).getTableAddress(table_entry);
+  
+  			}
+  			
+  			this->fd->length += ((this->offset + len) - this->fd->length);
 	}
 
 	// Will probably break during testing
 	int written_bytes = 0;
-	for (int i = 0; i <= ( ( (this->offset % BLOCK_SIZE) + len) / BLOCK_SIZE); i++) {
+	for (int i = 0; i <= ( ( (this->offset % BLOCK_SIZE) + len) / BLOCK_SIZE) + 1; i++) {
 		int bytes_to_write = ((BLOCK_SIZE - (this->offset % BLOCK_SIZE)) <= len) ? (BLOCK_SIZE - (this->offset % BLOCK_SIZE)) : len;
 		mf.flash_write(this->read_pointer, (uint8_t *)&bytes[written_bytes], (bytes_to_write), (*fileSystem).getRandomScratch());
-		written_bytes += bytes_to_write; //fix this?
+		written_bytes += bytes_to_write; /
 		setPosition(this->offset + bytes_to_write);
 	}
 
