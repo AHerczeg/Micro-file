@@ -6,28 +6,28 @@
 
 class MicroBitFile
 {
-	// Do we need all this?
-	//int fileHandle;
+
 	char * file_name;
 	uint8_t * file_directory;
-	//MicroBitFileSystem fs;
-	uint8_t * read_pointer;
+	
 	FileDescriptor * fd;
-	MicroBitFileSystem *fileSystem; // Or move to .cpp? also is it better as static?
-	int offset; // There has to be a better way
- 
+	MicroBitFileSystem *fileSystem;
+	int offset;
 	MicroBitFlash mf;
+	uint16_t * last_block;
 
 	private:
 
 	public:
 
+	uint8_t * read_pointer;
+
 	MicroBitFile(char *file_name) : MicroBitFile(file_name, NULL) {};
 
 	MicroBitFile(char *file_name, uint8_t * directory);
-
-	int close(); // TODO
 	
+	FileDescriptor * close();
+
 	int setPosition(int offset);
 
 	int getPosition();
@@ -38,8 +38,7 @@ class MicroBitFile
 
 	int write(uint8_t *bytes, int len); // TODO
 
-	int append(uint8_t *bytes, int len);
-
+	int append(uint8_t * bytes, int len);
 
 	int length();
 
