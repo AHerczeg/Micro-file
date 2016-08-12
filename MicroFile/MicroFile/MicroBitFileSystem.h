@@ -19,6 +19,12 @@
 #define PAGE_OFFSET(a) (((uint8_t *)a - flash_address) % PAGE_SIZE)
 #define PAGE_START(a) (a - PAGE_OFFSET(a))
 
+#define BLOCK_OFFSET(a) ((a - flash_address) % BLOCK_SIZE)
+#define BLOCK_START(a) (a - BLOCK_OFFSET(a))
+
+#define BLOCK_NUMBER(a) (((a - flash_address) / BLOCK_SIZE) + 1)
+#define SAME_BLOCK(a, b) (BLOCK_NUMBER(a) == BLOCK_NUMBER(b))
+
 // FAT & File Descriptor flags
 #define UNUSED 0xFFFF
 #define EOF 0xFFFE
