@@ -5,6 +5,7 @@
 //#include "MicrobitFile.h"
 #include <stdint.h>
 #include <stdio.h>
+#include "MicroBitFile.h"
 
 #define PAGE_SIZE 1024  // Size of page in flash.
 #define BLOCK_SIZE 256
@@ -124,6 +125,7 @@ class MicroBitFileSystem {
 		int createDirectory(char * name, char * target_directory);
 	
 		void print();
+		int close(MicroBitFile file);
 		void printDir(uint16_t block_number, int level);
 };
 

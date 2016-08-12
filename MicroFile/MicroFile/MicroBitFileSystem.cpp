@@ -74,7 +74,7 @@ int MicroBitFileSystem::createDirectory(char *name, char *target_directory)
 		mf.flash_write((uint8_t *)getTableAddress(dir_block), (uint8_t *)&eof, 2, NULL);
 		//write dir block meta data
 	}
-	return 0; //todo error code here
+	return MICROBIT_OK;
 }
 
 int MicroBitFileSystem::createFile(char *file_name, uint8_t *byte_array, int length, char *directory)
@@ -83,11 +83,11 @@ int MicroBitFileSystem::createFile(char *file_name, uint8_t *byte_array, int len
 	int name_length = strlen(file_name);
 
 	if (name_length == 0 || name_length > 16) 
-		return 0;
+		return MICROBIT_INVALID_PARAMETER;
 
 	uint8_t *dir = (directory == NULL) ? root_dir : getDirectory(directory);
 	if (!dir) 
-		return 0;
+		return MICROBIT_NO_DATA;
 
 	if (findFileDescriptor(file_name, false, dir)) 
 		return 0;
@@ -97,7 +97,7 @@ int MicroBitFileSystem::createFile(char *file_name, uint8_t *byte_array, int len
 
 	uint16_t free_space = freeSpace(length);
 	if (!free_space) 
-		return 0;
+		return MICROBIT_NO_RESOURCES;
 
 	FileDescriptor *fd;
 	if (free_space - 1)
@@ -106,7 +106,7 @@ int MicroBitFileSystem::createFile(char *file_name, uint8_t *byte_array, int len
 		fd = newFileDescriptor(dir, false);
 
 	if (!fd)
-		return 0;
+		return MICROBIT_NO_DATA;
 
 
 	FileDescriptor temp_fd = { "", UNUSED, ~IS_FREE & ~IS_DIRECTORY, UNUSED };
@@ -202,7 +202,7 @@ int MicroBitFileSystem::freeSpace(int size)
 	}
 
 	if (free_blocks + deleted_blocks < blocks_needed)
-		return 0;
+		return MICROBIT_NO_RESOURCES;
 
 	// Clear table for deleted entries
 	else {
@@ -349,8 +349,8 @@ inline void MicroBitFileSystem::copyNeighboringBlocks(uint8_t * scratch_page, ui
 int MicroBitFileSystem::remove(char *file_name)
 {
 	FileDescriptor *fd = findFileDescriptor(file_name, false, root_dir);
-		if (!fd)
-			return 0;//todo error code
+	if (!fd)
+		return MICROBIT_NO_DATA;
 	return remove(fd);
 }
 
@@ -358,11 +358,11 @@ int MicroBitFileSystem::remove(char *file_name, char *directory)
 {
 	uint8_t *dir = getDirectory(directory);
 	if (!dir)
-		return 0; //todo error code goez here
+		return MICROBIT_NO_DATA;
 
 	FileDescriptor *fd = findFileDescriptor(file_name, false, root_dir);
 	if (!fd)
-		return 0;//todo error code
+		return MICROBIT_NO_DATA;
 
 	return remove(fd);
 }
@@ -387,7 +387,7 @@ int MicroBitFileSystem::removeDirectory(char *folder_name, uint8_t *directory)
 {
 	FileDescriptor *fd = findFileDescriptor(folder_name, true, directory);
 	if (!fd)
-		return 0;//todo error code
+		return MICROBIT_NO_DATA;
 	
 	remove(fd);
 
@@ -405,7 +405,7 @@ int MicroBitFileSystem::repeat(FileDescriptor *fd)
 		}
 		fd = getNextFileDescriptor(fd);
 	}
-	return 0;
+	return MICROBIT_OK;
 }
 
 void MicroBitFileSystem::deleteTableEntries(uint16_t block_number)
@@ -627,6 +627,11 @@ void MicroBitFileSystem::print()
 		fd = getNextFileDescriptor(fd);
 	}
 	*/
+}
+
+int MicroBitFileSystem::close(MicroBitFile file) {
+	FileDescriptor *fd = findFileDescriptor(file.getName(), false, file.getDirectory());
+	*fd = *(file.close()); //TODO test!
 }
 
 
