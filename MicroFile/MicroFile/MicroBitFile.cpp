@@ -54,8 +54,8 @@ int MicroBitFile::setPosition(int offset) {
 	
 	if (offset % BLOCK_SIZE)
 		this->read_pointer += offset % BLOCK_SIZE;
-	else if (offset > 0)
-		this->read_pointer += BLOCK_SIZE;
+
+
 
 
 	return 0; // DELETE
@@ -165,17 +165,10 @@ int MicroBitFile::append(uint8_t *bytes, int len) {
 
 	// If len > 0, we have to change the fd too!
 
-	printf("rPointer: %p", read_pointer);
-
-
-
 	if (len <= 0)
 		return 0;
 
 	setPosition(this->fd->length);
-
-	printf("rPointer: %p", read_pointer);
-
 
 	write(bytes, len);
 
